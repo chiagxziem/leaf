@@ -13,7 +13,7 @@ export default defineConfig({
     tailwindcss(),
     tsConfigPaths(),
     tanstackStart(),
-    nitroV2Plugin({ preset: "bun" }),
+    nitroV2Plugin({ preset: "bun", compatibilityDate: "2025-12-06" }),
     viteReact(),
   ],
 });
