@@ -15,6 +15,7 @@ import {
   TbFile,
   TbFilePlus,
   TbFiles,
+  TbFolder,
   TbFolderPlus,
   TbTrash,
 } from "react-icons/tb";
@@ -654,6 +655,7 @@ const FolderRow = ({
             <DropdownMenuContent
               align={isMobile ? "end" : "start"}
               className="w-56"
+              onCloseAutoFocus={(e) => e.preventDefault()}
               side={isMobile ? "bottom" : "right"}
             >
               <DropdownMenuItem
@@ -988,7 +990,7 @@ const FolderInputRow = ({
               size={SIDEBAR_BTN_SIZE}
               variant="input"
             >
-              <TbFile
+              <TbFolder
                 aria-hidden="true"
                 className="pointer-events-none shrink-0 text-muted-foreground/60"
               />

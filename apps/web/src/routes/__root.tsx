@@ -73,7 +73,6 @@ function RootDocument({ children }: Readonly<{ children: ReactNode }>) {
           enableSystem
         >
           {/* Give the app container a stable id we can resize on iOS */}
-          {/** biome-ignore lint/correctness/useUniqueElementIds: needed */}
           <div
             className="relative isolate flex min-h-dvh flex-col bg-background text-neutral-800 text-sm leading-normal antialiased **:outline-transparent **:outline-offset-2 selection:bg-lime-500 selection:text-neutral-950 md:text-[15px] xl:text-base dark:text-neutral-200"
             id="app-root"
