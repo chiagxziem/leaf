@@ -13,6 +13,7 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from "@/components/ui/empty";
+import { SidebarTrigger } from "@/components/ui/sidebar";
 import { useNoteMutations } from "@/hooks/use-note-mutations";
 import { countFolderStats, getMostRecentlyUpdatedNote } from "@/lib/utils";
 import { $getFolder, folderQueryOptions } from "@/server/folder";
@@ -63,8 +64,23 @@ function HomePage() {
 
   return (
     <main className="absolute inset-0 flex h-full flex-col">
-      <div className="flex flex-1 overflow-auto pt-4">
-        <div className="container flex flex-1">
+      <div className="relative flex flex-1 overflow-auto pt-4">
+        <WithState state={folderQuery}>
+          {(rf) => {
+            if (!rf) return null;
+            const stats = countFolderStats(rf);
+
+            if (stats.notes === 0) {
+              return (
+                <header className="absolute top-0 isolate z-10 flex h-10 w-full items-center px-3 lg:px-6">
+                  <SidebarTrigger className="lg:hidden" />
+                </header>
+              );
+            }
+          }}
+        </WithState>
+
+        <div className="container flex w-full flex-1">
           <WithState state={folderQuery}>
             {(rf) => {
               if (!rf) return null;
