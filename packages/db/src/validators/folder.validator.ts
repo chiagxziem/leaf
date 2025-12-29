@@ -8,7 +8,11 @@ import {
   NoteMetadataSchema,
 } from "./note.validator";
 
-export const FolderSelectSchema = createSelectSchema(folder);
+export const FolderSelectSchema = createSelectSchema(folder).extend({
+  createdAt: z.iso.datetime(),
+  updatedAt: z.iso.datetime(),
+  deletedAt: z.iso.datetime().nullable(),
+});
 
 export const FolderInsertSchema = createInsertSchema(folder)
   .pick({

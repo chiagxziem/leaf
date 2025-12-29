@@ -5,6 +5,8 @@ import { user } from "../schemas/user.schema";
 
 export const UserSelectSchema = createSelectSchema(user).extend({
   image: z.string().nullable().optional(),
+  createdAt: z.iso.datetime(),
+  updatedAt: z.iso.datetime(),
 });
 
 export const UserUpdateSchema = createUpdateSchema(user)

@@ -11,7 +11,7 @@ RUN bun add -g turbo@^2.6.1
 COPY . .
 
 # Generate a partial monorepo with a pruned lockfile for a target workspace.
-RUN turbo prune api --docker
+RUN turbo prune old --docker
 
 # --- BUILDER STAGE ---
 FROM base AS builder
@@ -21,7 +21,7 @@ WORKDIR /app
 COPY --from=prepare /app/out/json/ .
 
 # Install dependencies
-RUN bun install
+RUN bun install --frozen-lockfile
 
 # Copy the rest of the files (as they change more often)
 COPY --from=prepare /app/out/full/ .
@@ -38,9 +38,9 @@ ENV NODE_ENV=production \
     HOSTNAME="0.0.0.0" \
     PORT=8000
 
-COPY --from=builder /app/apps/api/api-exe ./api-exe
+COPY --from=builder /app/apps/old/old-exe ./old-exe
 
 USER bun
 EXPOSE 8000
 
-ENTRYPOINT [ "./api-exe" ]
+ENTRYPOINT [ "./old-exe" ]

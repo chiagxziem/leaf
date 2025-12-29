@@ -3,7 +3,11 @@ import z from "zod";
 
 import { note } from "../schemas/note.schema";
 
-export const EncryptedNoteSelectSchema = createSelectSchema(note);
+export const EncryptedNoteSelectSchema = createSelectSchema(note).extend({
+  createdAt: z.iso.datetime(),
+  updatedAt: z.iso.datetime(),
+  deletedAt: z.iso.datetime().nullable(),
+});
 
 export const NoteSelectSchema = EncryptedNoteSelectSchema.omit({
   contentEncrypted: true,

@@ -1,17 +1,15 @@
-import createApp from "@/lib/create-app";
-import configureOpenAPI from "./lib/openapi";
-import foldersRouter from "./routes/folder/folder.index";
-import notesRouter from "./routes/note/note.index";
-import userRouter from "./routes/user/user.index";
+import { createApp } from "@/app";
+import folder from "@/services/folder/folder.route";
+import health from "@/services/health/health.route";
+import note from "@/services/note/note.route";
+import user from "@/services/user/user.route";
 
 const app = createApp();
 
-const routers = [notesRouter, userRouter, foldersRouter];
-
-configureOpenAPI(app);
-
-routers.forEach((router) => {
-  app.route("/api", router);
-});
+app
+  .route("/health", health)
+  .route("/user", user)
+  .route("/folders", folder)
+  .route("/notes", note);
 
 export default app;
