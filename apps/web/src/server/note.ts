@@ -2,13 +2,14 @@ import type { Note } from "@repo/db/schemas/note.schema";
 import type { DecryptedNote } from "@repo/db/validators/note.validator";
 import { queryOptions } from "@tanstack/react-query";
 import { createServerFn } from "@tanstack/react-start";
+import { isAxiosError } from "axios";
 import pako from "pako";
 import z from "zod";
 
-import { axiosClient } from "@/lib/axios";
+import { axiosClient, axiosErrMsg } from "@/lib/axios";
 import { queryKeys } from "@/lib/query";
 import type { ApiSuccessResponse } from "@/lib/types";
-import { sessionMiddleware } from "@/middleware/auth-middleware";
+import { headersMiddleware } from "@/middleware/headers-middleware";
 import { $getFolder } from "@/server/folder";
 
 // Helper to get byte size of a string
@@ -37,20 +38,18 @@ const uint8ArrayToBase64 = (bytes: Uint8Array): string => {
 //* GET NOTES
 // get notes server fn
 export const $getNotes = createServerFn()
-  .middleware([sessionMiddleware])
+  .middleware([headersMiddleware])
   .handler(async ({ context }) => {
     try {
-      const response = await axiosClient.get<ApiSuccessResponse<Note[]>>(
-        `/notes`,
-        {
-          headers: {
-            Authorization: `Bearer ${context.session.token}`,
-          },
-        },
-      );
+      const res = await axiosClient.get<ApiSuccessResponse<Note[]>>(`/notes`, {
+        headers: context.headers,
+      });
 
-      return response.data.data;
-    } catch (_error) {
+      return res.data.data;
+    } catch (err) {
+      if (isAxiosError(err)) {
+        console.error("Error getting notes:", axiosErrMsg(err));
+      }
       return null;
     }
   });
@@ -59,13 +58,13 @@ export const notesQueryOptions = queryOptions({
   queryKey: queryKeys.notes(),
   queryFn: $getNotes,
   // Notes list should be fresh
-  staleTime: 30 * 1000, // 30 seconds
+  staleTime: 30 * 1000,
 });
 
 //* GET SINGLE NOTE
 // get single note server fn
 export const $getSingleNote = createServerFn()
-  .middleware([sessionMiddleware])
+  .middleware([headersMiddleware])
   .inputValidator(z.string().min(1))
   .handler(async ({ context, data: noteId }) => {
     if (noteId.startsWith("temp-note-")) {
@@ -73,20 +72,21 @@ export const $getSingleNote = createServerFn()
     }
 
     try {
-      const response = await axiosClient.get<ApiSuccessResponse<DecryptedNote>>(
+      const res = await axiosClient.get<ApiSuccessResponse<DecryptedNote>>(
         `/notes/${noteId}`,
         {
-          headers: {
-            Authorization: `Bearer ${context.session.token}`,
-          },
+          headers: context.headers,
           timeout: 10000,
         },
       );
 
-      const note = response.data.data;
+      const note = res.data.data;
 
       return note;
-    } catch {
+    } catch (err) {
+      if (isAxiosError(err)) {
+        console.error("Error getting a single note:", axiosErrMsg(err));
+      }
       return null;
     }
   });
@@ -96,15 +96,15 @@ export const singleNoteQueryOptions = (noteId: string) =>
     queryKey: queryKeys.note(noteId),
     queryFn: () => $getSingleNote({ data: noteId }),
     // Notes change frequently, use shorter stale time
-    staleTime: 60 * 1000, // 1 minute
+    staleTime: 60 * 1000,
     // Keep note data in cache longer for quick navigation
-    gcTime: 15 * 60 * 1000, // 15 minutes
+    gcTime: 15 * 60 * 1000,
   });
 
 //* CREATE NOTE
 // create note server fn
 export const $createNote = createServerFn()
-  .middleware([sessionMiddleware])
+  .middleware([headersMiddleware])
   .inputValidator(
     z.object({
       title: z.string().min(1),
@@ -119,39 +119,35 @@ export const $createNote = createServerFn()
       title: data.title,
     };
 
-    const response = await axiosClient.post<ApiSuccessResponse<Note>>(
+    const res = await axiosClient.post<ApiSuccessResponse<Note>>(
       "/notes",
       payload,
       {
-        headers: {
-          Authorization: `Bearer ${context.session.token}`,
-        },
+        headers: context.headers,
       },
     );
 
-    return response.data;
+    return res.data;
   });
 
 //* MAKE NOTE COPY
 // make note copy server fn
 export const $makeNoteCopy = createServerFn()
-  .middleware([sessionMiddleware])
+  .middleware([headersMiddleware])
   .inputValidator(
     z.object({
       noteId: z.string().min(1),
     }),
   )
   .handler(async ({ context, data }) => {
-    const response = await axiosClient.get<ApiSuccessResponse<Note>>(
+    const res = await axiosClient.get<ApiSuccessResponse<Note>>(
       `/notes/${data.noteId}/copy`,
       {
-        headers: {
-          Authorization: `Bearer ${context.session.token}`,
-        },
+        headers: context.headers,
       },
     );
 
-    return response.data;
+    return res.data;
   });
 
 //* RENAME NOTE
@@ -159,7 +155,7 @@ export const $makeNoteCopy = createServerFn()
 export const $renameNote = createServerFn({
   method: "POST",
 })
-  .middleware([sessionMiddleware])
+  .middleware([headersMiddleware])
   .inputValidator(
     z.object({
       title: z.string().min(1),
@@ -171,17 +167,15 @@ export const $renameNote = createServerFn({
       title: data.title,
     };
 
-    const response = await axiosClient.put<ApiSuccessResponse<Note>>(
+    const res = await axiosClient.put<ApiSuccessResponse<Note>>(
       `/notes/${data.noteId}`,
       payload,
       {
-        headers: {
-          Authorization: `Bearer ${context.session.token}`,
-        },
+        headers: context.headers,
       },
     );
 
-    return response.data;
+    return res.data;
   });
 
 //* UPDATE NOTE CONTENT
@@ -189,7 +183,7 @@ export const $renameNote = createServerFn({
 export const $updateNoteContent = createServerFn({
   method: "POST",
 })
-  .middleware([sessionMiddleware])
+  .middleware([headersMiddleware])
   .inputValidator(
     z.object({
       title: z.string().min(1),
@@ -230,17 +224,15 @@ export const $updateNoteContent = createServerFn({
       payload.content = data.content;
     }
 
-    const response = await axiosClient.put<ApiSuccessResponse<Note>>(
+    const res = await axiosClient.put<ApiSuccessResponse<Note>>(
       `/notes/${data.noteId}`,
       payload,
       {
-        headers: {
-          Authorization: `Bearer ${context.session.token}`,
-        },
+        headers: context.headers,
       },
     );
 
-    return response.data;
+    return res.data;
   });
 
 //* MOVE NOTE
@@ -248,7 +240,7 @@ export const $updateNoteContent = createServerFn({
 export const $moveNote = createServerFn({
   method: "POST",
 })
-  .middleware([sessionMiddleware])
+  .middleware([headersMiddleware])
   .inputValidator(
     z.object({
       noteId: z.string().min(1),
@@ -260,23 +252,21 @@ export const $moveNote = createServerFn({
       folderId: data.folderId,
     };
 
-    const response = await axiosClient.patch<ApiSuccessResponse<Note>>(
+    const res = await axiosClient.patch<ApiSuccessResponse<Note>>(
       `/notes/${data.noteId}/move`,
       payload,
       {
-        headers: {
-          Authorization: `Bearer ${context.session.token}`,
-        },
+        headers: context.headers,
       },
     );
 
-    return response.data;
+    return res.data;
   });
 
 //* DELETE NOTE
 // delete note server fn
 export const $deleteNote = createServerFn()
-  .middleware([sessionMiddleware])
+  .middleware([headersMiddleware])
   .inputValidator(
     z.object({
       noteId: z.string().min(1),
@@ -286,9 +276,7 @@ export const $deleteNote = createServerFn()
     await axiosClient.delete<ApiSuccessResponse<Note>>(
       `/notes/${data.noteId}`,
       {
-        headers: {
-          Authorization: `Bearer ${context.session.token}`,
-        },
+        headers: context.headers,
       },
     );
   });

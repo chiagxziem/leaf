@@ -20,34 +20,6 @@ export const fontsHref = [
 ];
 
 /**
- * Normalizes a possibly multi-encoded token by decoding repeatedly, then encoding once.
- * @param token - The token that may contain nested URI encodings.
- * @returns A single-layer URI-encoded token.
- */
-export const normalizeTokenEncoding = (token: string): string => {
-  let decoded = token;
-  let previousDecoded = "";
-
-  // Decode until we can't decode anymore
-  while (decoded !== previousDecoded) {
-    previousDecoded = decoded;
-    try {
-      const attemptDecode = decodeURIComponent(decoded);
-      if (attemptDecode !== decoded) {
-        decoded = attemptDecode;
-      } else {
-        break;
-      }
-    } catch {
-      break;
-    }
-  }
-
-  // Now encode it back one step
-  return encodeURIComponent(decoded);
-};
-
-/**
  * Returns initials for a given full name.
  * - 1 name: first two letters, first uppercase (e.g., "chris" -> "Ch")
  * - 2 names: initials of both (e.g., "chris smith" -> "CS")

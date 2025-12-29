@@ -1,58 +1,36 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { zodValidator } from "@tanstack/zod-adapter";
+import { createFileRoute } from "@tanstack/react-router";
 import { Image } from "@unpic/react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { toast } from "sonner";
-import z from "zod";
 
 import { Button } from "@/components/ui/button";
 import { cancelToastEl } from "@/components/ui/toaster";
-import { authClient } from "@/lib/better-auth-client";
-
-const SearchSchema = z.object({
-  error: z.string().optional(),
-  success: z.string().optional(),
-});
+import { authClient } from "@/lib/auth-client";
+import env from "@/lib/env";
 
 export const Route = createFileRoute("/auth/sign-in")({
-  validateSearch: zodValidator(SearchSchema),
   component: SignInPage,
 });
 
 function SignInPage() {
-  const { error, success } = Route.useSearch();
-  const navigate = useNavigate({ from: Route.fullPath });
-
   const [buttonState, setButtonState] = useState<"idle" | "loading">("idle");
-
-  useEffect(() => {
-    if (error) {
-      setTimeout(() => {
-        toast.error(error, cancelToastEl);
-      });
-    }
-    if (success) {
-      setTimeout(() => {
-        toast.success(success, cancelToastEl);
-      });
-    }
-
-    navigate({
-      search: { error: undefined, success: undefined },
-    });
-  }, [error, success, navigate]);
 
   const handleGoogleSignIn = async () => {
     try {
       await authClient.signIn.social(
         {
           provider: "google",
+          callbackURL: `${env.VITE_BASE_URL}`,
         },
         {
           onRequest() {
             setButtonState("loading");
           },
+          onSuccess: () => {
+            setButtonState("idle");
+          },
           onError(ctx) {
+            setButtonState("idle");
             toast.error(ctx.error.message, cancelToastEl);
           },
         },

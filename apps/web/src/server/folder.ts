@@ -2,49 +2,50 @@ import type { Folder } from "@repo/db/schemas/folder.schema";
 import type { FolderWithItems } from "@repo/db/validators/folder.validator";
 import { queryOptions } from "@tanstack/react-query";
 import { createServerFn } from "@tanstack/react-start";
+import { isAxiosError } from "axios";
 import z from "zod";
 
-import { axiosClient } from "@/lib/axios";
+import { axiosClient, axiosErrMsg } from "@/lib/axios";
 import { queryKeys } from "@/lib/query";
 import type { ApiSuccessResponse } from "@/lib/types";
-import { sessionMiddleware } from "@/middleware/auth-middleware";
+import { headersMiddleware } from "@/middleware/headers-middleware";
 
 //* ENSURE ROOT FOLDER
 // Ensures the user has a root folder, creating one if it doesn't exist
 export const $ensureRootFolder = createServerFn()
-  .middleware([sessionMiddleware])
+  .middleware([headersMiddleware])
   .handler(async ({ context }) => {
-    const response = await axiosClient.post<ApiSuccessResponse<Folder>>(
+    const res = await axiosClient.post<ApiSuccessResponse<Folder>>(
       "/folders/root",
       {},
       {
-        headers: {
-          Authorization: `Bearer ${context.session.token}`,
-        },
+        headers: context.headers,
       },
     );
 
-    return response.data.data;
+    return res.data.data;
   });
 
 //* GET FOLDER
 // get folder server fn
 export const $getFolder = createServerFn()
-  .middleware([sessionMiddleware])
+  .middleware([headersMiddleware])
   .inputValidator(z.string().min(1).optional())
   .handler(async ({ context, data: folderId }) => {
     try {
-      const response = await axiosClient.get<
-        ApiSuccessResponse<FolderWithItems>
-      >("/folders", {
-        headers: {
-          Authorization: `Bearer ${context.session.token}`,
+      const res = await axiosClient.get<ApiSuccessResponse<FolderWithItems>>(
+        "/folders",
+        {
+          headers: context.headers,
+          params: folderId ? { folderId } : undefined,
         },
-        params: folderId ? { folderId } : undefined,
-      });
+      );
 
-      return response.data.data;
-    } catch (_error) {
+      return res.data.data;
+    } catch (err) {
+      if (isAxiosError(err)) {
+        console.error("Error getting folder:", axiosErrMsg(err));
+      }
       return null;
     }
   });
@@ -53,15 +54,15 @@ export const folderQueryOptions = queryOptions({
   queryKey: queryKeys.folder("root"),
   queryFn: $getFolder,
   // Folder structure doesn't change often, use longer stale time
-  staleTime: 2 * 60 * 1000, // 2 minutes
+  staleTime: 2 * 60 * 1000,
   // Keep folder tree in cache for quick access
-  gcTime: 30 * 60 * 1000, // 30 minutes
+  gcTime: 30 * 60 * 1000,
 });
 
 //* CREATE FOLDER
 // create folder server fn
 export const $createFolder = createServerFn()
-  .middleware([sessionMiddleware])
+  .middleware([headersMiddleware])
   .inputValidator(
     z.object({
       name: z.string().min(1),
@@ -76,23 +77,21 @@ export const $createFolder = createServerFn()
       name: data.name,
     };
 
-    const response = await axiosClient.post<ApiSuccessResponse<Folder>>(
+    const res = await axiosClient.post<ApiSuccessResponse<Folder>>(
       "/folders",
       payload,
       {
-        headers: {
-          Authorization: `Bearer ${context.session.token}`,
-        },
+        headers: context.headers,
       },
     );
 
-    return response.data;
+    return res.data;
   });
 
 //* RENAME FOLDER
 // rename folder server fn
 export const $renameFolder = createServerFn()
-  .middleware([sessionMiddleware])
+  .middleware([headersMiddleware])
   .inputValidator(
     z.object({
       name: z.string().min(1),
@@ -104,17 +103,15 @@ export const $renameFolder = createServerFn()
       name: data.name,
     };
 
-    const response = await axiosClient.put<ApiSuccessResponse<Folder>>(
+    const res = await axiosClient.put<ApiSuccessResponse<Folder>>(
       `/folders/${data.folderId}`,
       payload,
       {
-        headers: {
-          Authorization: `Bearer ${context.session.token}`,
-        },
+        headers: context.headers,
       },
     );
 
-    return response.data;
+    return res.data;
   });
 
 //* MOVE FOLDER
@@ -122,7 +119,7 @@ export const $renameFolder = createServerFn()
 export const $moveFolder = createServerFn({
   method: "POST",
 })
-  .middleware([sessionMiddleware])
+  .middleware([headersMiddleware])
   .inputValidator(
     z.object({
       folderId: z.string().min(1),
@@ -134,23 +131,21 @@ export const $moveFolder = createServerFn({
       parentFolderId: data.parentFolderId,
     };
 
-    const response = await axiosClient.patch<ApiSuccessResponse<Folder>>(
+    const res = await axiosClient.patch<ApiSuccessResponse<Folder>>(
       `/folders/${data.folderId}/move`,
       payload,
       {
-        headers: {
-          Authorization: `Bearer ${context.session.token}`,
-        },
+        headers: context.headers,
       },
     );
 
-    return response.data;
+    return res.data;
   });
 
 //* DELETE FOLDER
 // delete folder server fn
 export const $deleteFolder = createServerFn()
-  .middleware([sessionMiddleware])
+  .middleware([headersMiddleware])
   .inputValidator(
     z.object({
       folderId: z.string().min(1),
@@ -160,9 +155,7 @@ export const $deleteFolder = createServerFn()
     await axiosClient.delete<ApiSuccessResponse<Folder>>(
       `/folders/${data.folderId}`,
       {
-        headers: {
-          Authorization: `Bearer ${context.session.token}`,
-        },
+        headers: context.headers,
       },
     );
   });

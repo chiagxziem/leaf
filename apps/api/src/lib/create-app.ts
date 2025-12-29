@@ -25,7 +25,6 @@ export const createRouter = () => {
 const createApp = () => {
   const app = createRouter();
 
-  // Parse CORS origins from environment variable
   const corsOrigins = env.CORS_ORIGINS
     ? env.CORS_ORIGINS.split(",").map((origin) => origin.trim())
     : ["http://localhost:3000"];
@@ -62,7 +61,7 @@ const createApp = () => {
     },
   });
 
-  app.use("/api/better-auth/*", authRateLimiter);
+  app.use("/api/auth/*", authRateLimiter);
   app.use("/api/*", apiRateLimiter);
 
   // Security Headers
@@ -84,9 +83,7 @@ const createApp = () => {
   app.use(emojiFavicon("🍀"));
 
   // Better Auth
-  app.on(["POST", "GET"], "/api/better-auth/**", (c) =>
-    auth.handler(c.req.raw),
-  );
+  app.on(["POST", "GET"], "/api/auth/**", (c) => auth.handler(c.req.raw));
 
   // Middleware for handling errors and not found routes
   app.notFound(notFoundRoute);

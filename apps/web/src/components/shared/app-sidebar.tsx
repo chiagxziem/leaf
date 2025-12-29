@@ -22,7 +22,7 @@ import { toast } from "sonner";
 import { useFolderMutations } from "@/hooks/use-folder-mutations";
 import { useNoteMutations } from "@/hooks/use-note-mutations";
 import { useTreeDnD } from "@/hooks/use-tree-dnd";
-import { authClient } from "@/lib/better-auth-client";
+import { authClient } from "@/lib/auth-client";
 import { queryKeys } from "@/lib/query";
 import type { Theme } from "@/lib/types";
 import {

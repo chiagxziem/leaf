@@ -2,7 +2,6 @@ import type { QueryClient } from "@tanstack/react-query";
 import {
   createRootRouteWithContext,
   HeadContent,
-  Outlet,
   Scripts,
 } from "@tanstack/react-router";
 import { ThemeProvider } from "next-themes";
@@ -35,10 +34,6 @@ export const Route = createRootRouteWithContext<AppRouterContext>()({
     links: [
       { rel: "stylesheet", href: appCss },
       { rel: "stylesheet", href: fontsCss },
-      {
-        rel: "icon",
-        href: "/favicons/favicon.ico",
-      },
       ...fontsHref.map((href) => ({
         rel: "preload",
         href,
@@ -48,11 +43,8 @@ export const Route = createRootRouteWithContext<AppRouterContext>()({
       })),
     ],
   }),
-  component: () => (
-    <RootDocument>
-      <Outlet />
-    </RootDocument>
-  ),
+
+  shellComponent: RootDocument,
 });
 
 function RootDocument({ children }: Readonly<{ children: ReactNode }>) {
