@@ -16,8 +16,6 @@ const env = createEnv({
     BETTER_AUTH_URL: z.url(),
     GOOGLE_CLIENT_ID: z.string().min(1),
     GOOGLE_CLIENT_SECRET: z.string().min(1),
-    RESEND_API_KEY: z.string().min(1),
-    RESEND_DOMAIN: z.string().min(1),
     // Comma-separated list of allowed CORS origins (e.g., "http://localhost:3120,https://app.example.com")
     CORS_ORIGINS: z.string().optional(),
   },

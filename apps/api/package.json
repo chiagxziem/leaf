@@ -4,7 +4,8 @@
   "type": "module",
   "scripts": {
     "dev": "bun run --hot src/index.ts",
-    "build": "bun build --compile --minify --sourcemap src/index.ts --outfile leaf-api"
+    "build": "bun build --compile --minify --sourcemap src/index.ts --outfile api-exe",
+    "start": "./api-exe"
   },
   "dependencies": {
     "@hono/bun-compress": "^0.1.0",

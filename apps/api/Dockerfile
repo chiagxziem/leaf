@@ -38,9 +38,9 @@ ENV NODE_ENV=production \
     HOSTNAME="0.0.0.0" \
     PORT=8000
 
-COPY --from=builder /app/apps/api/leaf-api ./leaf-api
+COPY --from=builder /app/apps/api/api-exe ./api-exe
 
 USER bun
 EXPOSE 8000
 
-ENTRYPOINT [ "./leaf-api" ]
+ENTRYPOINT [ "./api-exe" ]
