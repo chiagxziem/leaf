@@ -1,4 +1,4 @@
-import type { User } from "@repo/db";
+import type { User } from "@repo/db/schemas/user.schema";
 import { queryOptions } from "@tanstack/react-query";
 import { createServerFn } from "@tanstack/react-start";
 
