@@ -1,3 +1,6 @@
+/** biome-ignore-all lint/a11y/noNoninteractiveElementInteractions: needed */
+/** biome-ignore-all lint/a11y/useSemanticElements: needed */
+
 import { cva, type VariantProps } from "class-variance-authority";
 import type * as React from "react";
 
@@ -66,6 +69,12 @@ function InputGroupAddon({
       data-align={align}
       data-slot="input-group-addon"
       onClick={(e) => {
+        if ((e.target as HTMLElement).closest("button")) {
+          return;
+        }
+        e.currentTarget.parentElement?.querySelector("input")?.focus();
+      }}
+      onKeyUp={(e) => {
         if ((e.target as HTMLElement).closest("button")) {
           return;
         }
