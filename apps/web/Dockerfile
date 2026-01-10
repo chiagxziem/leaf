@@ -17,6 +17,14 @@ RUN turbo prune @repo/web --docker
 FROM base AS builder
 WORKDIR /app
 
+# Declare client arguments
+ARG VITE_AUTH_SERVER_URL
+ARG VITE_BASE_URL
+
+# Set them as environment variables so the build process can use them
+ENV VITE_AUTH_SERVER_URL=$VITE_AUTH_SERVER_URL
+ENV VITE_BASE_URL=$VITE_BASE_URL
+
 # Prune and copy dependencies (as they change less often)
 COPY --from=prepare /app/out/json/ .
 
