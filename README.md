@@ -75,7 +75,6 @@ Other tools used include Drizzle as the ORM layer for the database, Biome for li
         - `AUTH_COOKIE`: The name of the auth session cookie.
         - `ENCRYPTION_KEY`: A secret key for encrypting notes. Generate a new secret using the command: `openssl rand -hex 32`.
         - `BETTER_AUTH_SECRET`: A secret key for Better Auth. Generate a new secret using the command: `openssl rand -hex 32`.
-        - `BETTER_AUTH_URL`: The URL for Better Auth, typically the backend URL.
         - `RESEND_API_KEY`: Your Resend API key.
         - `RESEND_DOMAIN`: Your Resend domain.
         - `RESEND_API_KEY`: Your Resend API key.
@@ -89,7 +88,6 @@ Other tools used include Drizzle as the ORM layer for the database, Biome for li
         - `DATABASE_URL`: The same DB URL as the one set in the database package.
         - `AUTH_COOKIE`: The name of the auth session cookie.
         - `BETTER_AUTH_SECRET`: A secret key for Better Auth. Generate a new secret using the command: `openssl rand -hex 32`.
-        - `BETTER_AUTH_URL`: The URL for Better Auth, typically the frontend URL.
         - `GOOGLE_CLIENT_ID`: Your Google Client ID for Google Auth.
         - `GOOGLE_CLIENT_SECRET`: Your Google Client Secret for Google Auth.
 
