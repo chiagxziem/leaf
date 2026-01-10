@@ -15,6 +15,7 @@
       "!dist",
       "!build",
       "!**/generated/**/*.{ts,tsx,js,jsx,json,jsonc,md}",
+      "!**/migrations/**/*.{json,jsonc}",
       "!**/*.gen.{ts,tsx,js,jsx,json,jsonc,md}",
       "!**/worker-configuration.d.ts",
       "!!**/dist/**/*.{ts,tsx,js,jsx,json,jsonc,md}",
