@@ -1,6 +1,5 @@
 {
-  "name": "web",
-  "version": "0.0.1",
+  "name": "@repo/web",
   "type": "module",
   "scripts": {
     "dev": "vite dev",

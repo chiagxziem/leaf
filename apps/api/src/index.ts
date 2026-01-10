@@ -12,4 +12,7 @@ app
   .route("/folders", folder)
   .route("/notes", note);
 
-export default app;
+export default {
+  port: 8000,
+  fetch: app.fetch,
+};

@@ -1,19 +1,12 @@
-import z, { type ZodError } from "zod";
+import { createEnv } from "@t3-oss/env-core";
+import z from "zod";
 
-const EnvSchema = z.object({
-  DATABASE_URL: z.url(),
+const env = createEnv({
+  server: {
+    DATABASE_URL: z.url(),
+  },
+  runtimeEnv: process.env,
+  emptyStringAsUndefined: true,
 });
-
-export type Env = z.infer<typeof EnvSchema>;
-
-let env: Env;
-
-try {
-  env = EnvSchema.parse(process.env);
-} catch (e) {
-  const error = e as ZodError;
-  console.error(z.prettifyError(error));
-  process.exit(1);
-}
 
 export default env;

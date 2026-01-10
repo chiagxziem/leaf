@@ -24,9 +24,8 @@ export const createApp = () => {
   // CORS
   const corsOrigins = env.CORS_ORIGINS
     ? env.CORS_ORIGINS.split(",").map((origin) => origin.trim())
-    : ["http://localhost:3000"];
+    : "*";
 
-  // CORS
   app.use(
     "/*",
     cors({
@@ -79,7 +78,7 @@ export const createApp = () => {
             },
           },
         },
-        servers: [{ url: `${env.BASE_URL}` }],
+        servers: [{ url: `${env.OPENAPI_SERVER_URL}` }],
       },
     }),
   );

@@ -53,7 +53,7 @@ Other tools used include Drizzle as the ORM layer for the database, Biome for li
     - Create a `.env` file in `packages/db` and enter the DB URL:
 
         ```env
-        DATABASE_URL=postgresql://user:secret@localhost:5432/leaf
+        DATABASE_URL=postgresql://user:secret@localhost:5433/leaf
         ```
 
     - The database can be created using `turbo db:up`. Make sure you have Docker set up on your machine. It can be taken down using `turbo db:down`, and deleted using `turbo db:delete`.
@@ -70,7 +70,7 @@ Other tools used include Drizzle as the ORM layer for the database, Biome for li
     - Copy `.env.example` to `.env` in the `apps/api` directory.
     - Update the values to set up the environment variables. The required variables include:
         - `PORT`: The port the backend server will listen on (e.g., `8000`).
-        - `FRONTEND_URL`: The URL of the frontend application (e.g., `http://localhost:3000`).
+        - `WEB_URL`: The URL of the frontend application (e.g., `http://localhost:3000`).
         - `DATABASE_URL`: The same DB URL as the one set in the database package.
         - `AUTH_COOKIE`: The name of the auth session cookie.
         - `ENCRYPTION_KEY`: A secret key for encrypting notes. Generate a new secret using the command: `openssl rand -hex 32`.

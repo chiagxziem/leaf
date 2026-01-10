@@ -6,7 +6,7 @@ export const env = createEnv({
     NODE_ENV: z
       .enum(["development", "production", "test"])
       .default("development"),
-    BASE_URL: z.url(),
+    WEB_URL: z.url(),
     API_URL: z.url(),
     DATABASE_URL: z.url(),
   },
@@ -20,7 +20,7 @@ export const env = createEnv({
   runtimeEnv: {
     // Server
     NODE_ENV: process.env.NODE_ENV,
-    BASE_URL: process.env.BASE_URL,
+    WEB_URL: process.env.WEB_URL,
     API_URL: process.env.API_URL,
     DATABASE_URL: process.env.DATABASE_URL,
 

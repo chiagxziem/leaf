@@ -6,16 +6,16 @@ const env = createEnv({
     NODE_ENV: z
       .enum(["development", "production", "test"])
       .default("development"),
-    PORT: z.coerce.number(),
-    BASE_URL: z.url(),
-    FRONTEND_URL: z.url(),
+    API_URL: z.url(),
+    WEB_URL: z.url(),
+    OPENAPI_SERVER_URL: z.url(),
     DOMAIN: z.string().optional(),
     DATABASE_URL: z.url(),
-    ENCRYPTION_KEY: z.string().min(1),
     BETTER_AUTH_SECRET: z.string().min(1),
     BETTER_AUTH_URL: z.url(),
     GOOGLE_CLIENT_ID: z.string().min(1),
     GOOGLE_CLIENT_SECRET: z.string().min(1),
+    ENCRYPTION_KEY: z.string().min(1),
     // Comma-separated list of allowed CORS origins (e.g., "http://localhost:3120,https://app.example.com")
     CORS_ORIGINS: z.string().optional(),
   },

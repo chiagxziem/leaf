@@ -1,11 +1,10 @@
-name: leaf-db
+name: leaf
 
 services:
-  postgres:
-    image: postgres:17.5
-    container_name: leaf-pg
+  pg:
+    image: postgres:18-alpine
     ports:
-      - "5432:5432"
+      - "5433:5432"
     environment:
       POSTGRES_DB: leaf
       POSTGRES_USER: user

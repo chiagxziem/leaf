@@ -1,0 +1,73 @@
+services:
+  # Database (PostgreSQL)
+  pg:
+    image: postgres:18-alpine
+    restart: always
+    ports:
+      - 5432
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+        reservations:
+          memory: 256M
+    environment:
+      POSTGRES_DB: ${PG_NAME:-leaf}
+      POSTGRES_USER: ${PG_USER:-logr_admin}
+      POSTGRES_PASSWORD: ${PG_PASSWORD:?PG_PASSWORD is required}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "pg_isready -U ${PG_USER:-logr_admin} -d ${PG_NAME:-leaf}",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # API (Hono)
+  api:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    restart: always
+    ports:
+      - 8000
+    depends_on:
+      pg:
+        condition: service_healthy
+    environment:
+      API_URL: ${API_URL}
+      WEB_URL: ${WEB_URL}
+      OPENAPI_SERVER_URL: ${OPENAPI_SERVER_URL}
+      DOMAIN: ${DOMAIN}
+      DATABASE_URL: postgresql://${PG_USER}:${PG_PASSWORD}@pg:5432/${PG_NAME}
+      BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET}
+      BETTER_AUTH_URL: ${BETTER_AUTH_URL}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET}
+      ENCRYPTION_KEY: ${ENCRYPTION_KEY}
+      CORS_ORIGINS: ${CORS_ORIGINS}
+
+  # Web (TanStack Start)
+  web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+    restart: always
+    ports:
+      - 3000
+    depends_on:
+      api:
+        condition: service_started
+    environment:
+      WEB_URL: ${WEB_URL}
+      API_URL: ${API_URL}
+      DATABASE_URL: postgresql://${PG_USER}:${PG_PASSWORD}@pg:5432/${PG_NAME}
+      VITE_AUTH_SERVER_URL: ${VITE_AUTH_SERVER_URL}
+      VITE_BASE_URL: ${VITE_BASE_URL}
+
+volumes:
+  pgdata:

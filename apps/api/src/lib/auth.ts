@@ -48,7 +48,7 @@ export const auth = betterAuth({
     },
   },
 
-  trustedOrigins: [env.BASE_URL, env.FRONTEND_URL],
+  trustedOrigins: [env.API_URL, env.WEB_URL],
 
   session: {
     expiresIn: 60 * 60 * 24 * 30,

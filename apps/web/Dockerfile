@@ -1,4 +1,4 @@
-FROM oven/bun:1.3.3 AS base
+FROM oven/bun:1.3.3-alpine AS base
 
 # --- PREPARE STAGE ---
 FROM base AS prepare
@@ -11,7 +11,7 @@ RUN bun add -g turbo@^2.6.1
 COPY . .
 
 # Generate a partial monorepo with a pruned lockfile for a target workspace.
-RUN turbo prune web --docker
+RUN turbo prune @repo/web --docker
 
 # --- BUILDER STAGE ---
 FROM base AS builder
