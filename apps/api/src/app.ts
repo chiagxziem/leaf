@@ -78,7 +78,7 @@ export const createApp = () => {
             },
           },
         },
-        servers: [{ url: `${env.OPENAPI_SERVER_URL}` }],
+        servers: [{ url: `${env.API_URL}` }],
       },
     }),
   );

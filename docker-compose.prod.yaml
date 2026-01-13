@@ -41,7 +41,6 @@ services:
     environment:
       API_URL: ${API_URL}
       WEB_URL: ${WEB_URL}
-      OPENAPI_SERVER_URL: ${OPENAPI_SERVER_URL}
       DOMAIN: ${DOMAIN}
       DATABASE_URL: postgresql://${PG_USER}:${PG_PASSWORD}@pg:5432/${PG_NAME}
       BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET}

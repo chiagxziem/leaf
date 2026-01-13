@@ -8,7 +8,6 @@ const env = createEnv({
       .default("development"),
     API_URL: z.url(),
     WEB_URL: z.url(),
-    OPENAPI_SERVER_URL: z.url(),
     DOMAIN: z.string().optional(),
     DATABASE_URL: z.url(),
     BETTER_AUTH_SECRET: z.string().min(1),
