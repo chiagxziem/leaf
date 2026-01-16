@@ -13,7 +13,7 @@ services:
           memory: 256M
     environment:
       POSTGRES_DB: ${PG_NAME:-leaf}
-      POSTGRES_USER: ${PG_USER:-logr_admin}
+      POSTGRES_USER: ${PG_USER:-leaf_admin}
       POSTGRES_PASSWORD: ${PG_PASSWORD:?PG_PASSWORD is required}
     volumes:
       - pgdata:/var/lib/postgresql/data
@@ -21,7 +21,7 @@ services:
       test:
         [
           "CMD-SHELL",
-          "pg_isready -U ${PG_USER:-logr_admin} -d ${PG_NAME:-leaf}",
+          "pg_isready -U ${PG_USER:-leaf_admin} -d ${PG_NAME:-leaf}",
         ]
       interval: 10s
       timeout: 5s
