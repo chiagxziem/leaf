@@ -1,12 +1,39 @@
 import { type InferSelectModel, relations, sql } from "drizzle-orm";
-import { index, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
+import { boolean, index, integer, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
 
-import { user } from "./user.schema";
+// oxlint-disable-next-line import/no-cycle
+import { folder } from "./folder.schema";
+import { note } from "./note.schema";
+
+export const user = pgTable("user", {
+  id: uuid("id")
+    .default(sql`pg_catalog.gen_random_uuid()`)
+    .primaryKey(),
+  name: text("name").notNull(),
+  email: text("email").notNull().unique(),
+  emailVerified: boolean("email_verified").default(false).notNull(),
+  image: text("image"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at")
+    .defaultNow()
+    .$onUpdate(() => /* @__PURE__ */ new Date())
+    .notNull(),
+  encryptionSalt: text("encryption_salt"),
+  encryptionVersion: integer("encryption_version").default(1).notNull(),
+});
+export const userRelations = relations(user, ({ many }) => ({
+  sessions: many(session),
+  accounts: many(account),
+  notes: many(note),
+  folders: many(folder),
+}));
 
 export const session = pgTable(
   "session",
   {
-    id: uuid("id").default(sql`pg_catalog.gen_random_uuid()`).primaryKey(),
+    id: uuid("id")
+      .default(sql`pg_catalog.gen_random_uuid()`)
+      .primaryKey(),
     expiresAt: timestamp("expires_at").notNull(),
     token: text("token").notNull().unique(),
     ipAddress: text("ip_address"),
@@ -31,7 +58,9 @@ export const sessionRelations = relations(session, ({ one }) => ({
 export const account = pgTable(
   "account",
   {
-    id: uuid("id").default(sql`pg_catalog.gen_random_uuid()`).primaryKey(),
+    id: uuid("id")
+      .default(sql`pg_catalog.gen_random_uuid()`)
+      .primaryKey(),
     accountId: text("account_id").notNull(),
     providerId: text("provider_id").notNull(),
     userId: uuid("user_id")
@@ -61,7 +90,9 @@ export const accountRelations = relations(account, ({ one }) => ({
 export const verification = pgTable(
   "verification",
   {
-    id: uuid("id").default(sql`pg_catalog.gen_random_uuid()`).primaryKey(),
+    id: uuid("id")
+      .default(sql`pg_catalog.gen_random_uuid()`)
+      .primaryKey(),
     identifier: text("identifier").notNull(),
     value: text("value").notNull(),
     expiresAt: timestamp("expires_at").notNull(),
@@ -74,6 +105,7 @@ export const verification = pgTable(
   (table) => [index("verification_identifier_idx").on(table.identifier)],
 );
 
+export type User = InferSelectModel<typeof user>;
 export type Session = InferSelectModel<typeof session>;
 export type Account = InferSelectModel<typeof account>;
 export type Verification = InferSelectModel<typeof verification>;

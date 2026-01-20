@@ -1,9 +1,5 @@
 import type { QueryClient } from "@tanstack/react-query";
-import {
-  createRootRouteWithContext,
-  HeadContent,
-  Scripts,
-} from "@tanstack/react-router";
+import { createRootRouteWithContext, HeadContent, Scripts } from "@tanstack/react-router";
 import { ThemeProvider } from "next-themes";
 import type { ReactNode } from "react";
 
@@ -66,7 +62,7 @@ function RootDocument({ children }: Readonly<{ children: ReactNode }>) {
         >
           {/* Give the app container a stable id we can resize on iOS */}
           <div
-            className="relative isolate flex min-h-dvh flex-col bg-background text-neutral-800 text-sm leading-normal antialiased **:outline-transparent **:outline-offset-2 selection:bg-lime-500 selection:text-neutral-950 md:text-[15px] xl:text-base dark:text-neutral-200"
+            className="relative isolate flex min-h-dvh flex-col bg-background text-sm leading-normal text-neutral-800 antialiased **:outline-offset-2 **:outline-transparent selection:bg-lime-500 selection:text-neutral-950 md:text-[15px] xl:text-base dark:text-neutral-200"
             id="app-root"
           >
             {children}

@@ -28,7 +28,7 @@ export const ScreenSize = () => {
   return (
     <div
       className={cn(
-        "fixed right-3 bottom-3 z-[500] flex items-center space-x-2 rounded-full bg-lime-500 px-2.5 py-1 font-bold text-neutral-950 text-xs shadow-sm transition-opacity duration-300",
+        "fixed right-3 bottom-3 z-[500] flex items-center space-x-2 rounded-full bg-lime-500 px-2.5 py-1 text-xs font-bold text-neutral-950 shadow-sm transition-opacity duration-300",
         dimensions.width === 0 ? "opacity-0" : "opacity-100",
       )}
     >
@@ -44,8 +44,8 @@ export const ScreenSize = () => {
         <span className="hidden md:inline lg:hidden">MD</span>
         <span className="hidden lg:inline xl:hidden">LG</span>
         <span className="hidden xl:inline 2xl:hidden">XL</span>
-        <span className="3xl:hidden hidden 2xl:inline">2XL</span>
-        <span className="3xl:inline hidden">3XL</span>
+        <span className="hidden 2xl:inline 3xl:hidden">2XL</span>
+        <span className="hidden 3xl:inline">3XL</span>
       </div>
     </div>
   );

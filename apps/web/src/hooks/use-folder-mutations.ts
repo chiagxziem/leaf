@@ -1,4 +1,4 @@
-import type { User } from "@repo/db/schemas/user.schema";
+import type { User } from "@repo/db/schemas/auth.schema";
 import type { FolderWithItems } from "@repo/db/validators/folder.validator";
 import type { QueryClient } from "@tanstack/react-query";
 import { useMutation } from "@tanstack/react-query";
@@ -25,6 +25,37 @@ type Params = {
   setOpenFolderIds: React.Dispatch<React.SetStateAction<Set<string>>>;
 };
 
+// A shared deep clone helper needed to avoid mutating the existing state
+// directly when performing optimistic updates. This is a recursive function
+// because FolderWithItems is a nested structure with folders containing
+// more folders recursively.
+const clone = (node: FolderWithItems): FolderWithItems => ({
+  ...node,
+  folders: node.folders.map(clone),
+  notes: [...node.notes],
+});
+
+const containsNote = (node: FolderWithItems, noteId: string): boolean => {
+  if (node.notes.some((n) => n.id === noteId)) return true;
+  for (const f of node.folders) if (containsNote(f, noteId)) return true;
+  return false;
+};
+
+// Prevent circular moves
+const isDescendant = (node: FolderWithItems, targetId: string): boolean => {
+  if (node.id === targetId) return true;
+  return node.folders.some((f) => isDescendant(f, targetId));
+};
+
+const findFolder = (node: FolderWithItems, id: string): FolderWithItems | null => {
+  if (node.id === id) return node;
+  for (const f of node.folders) {
+    const found = findFolder(f, id);
+    if (found) return found;
+  }
+  return null;
+};
+
 export function useFolderMutations({
   queryClient,
   rootFolder,
@@ -40,16 +71,6 @@ export function useFolderMutations({
   const renameFolderFn = useServerFn($renameFolder);
   const moveFolderFn = useServerFn($moveFolder);
 
-  // A shared deep clone helper needed to avoid mutating the existing state
-  // directly when performing optimistic updates. This is a recursive function
-  // because FolderWithItems is a nested structure with folders containing
-  // more folders recursively.
-  const clone = (node: FolderWithItems): FolderWithItems => ({
-    ...node,
-    folders: node.folders.map(clone),
-    notes: [...node.notes],
-  });
-
   /* CREATE FOLDER */
   const createFolderMutation = useMutation({
     mutationKey: ["create-folder"],
@@ -57,8 +78,7 @@ export function useFolderMutations({
       createFolderFn({ data: { name: vars.name, parentId: vars.parentId } }),
     onMutate: async (vars) => {
       const parentId = vars.parentId ?? rootFolder?.id;
-      if (!parentId || !rootFolder)
-        return { previous: null as FolderWithItems | null };
+      if (!parentId || !rootFolder) return { previous: null as FolderWithItems | null };
 
       // Cancel any outgoing refetches (so they don't overwrite the optimistic update)
       await queryClient.cancelQueries({
@@ -122,9 +142,7 @@ export function useFolderMutations({
 
       // If mutation succeeds, get the real new folder from the server response
       const serverFolder = data.data;
-      const current = queryClient.getQueryData<FolderWithItems | null>(
-        folderQueryOptions.queryKey,
-      );
+      const current = queryClient.getQueryData<FolderWithItems | null>(folderQueryOptions.queryKey);
       if (!current) return;
 
       // Replace the temporary folder in the cached structure with the real one
@@ -149,9 +167,9 @@ export function useFolderMutations({
       });
       queryClient.setQueryData(folderQueryOptions.queryKey, replace(current));
     },
-    onSettled: () => {
+    onSettled: async () => {
       // Invalidate queries to ensure fresh data is fetched
-      queryClient.invalidateQueries({
+      await queryClient.invalidateQueries({
         queryKey: folderQueryOptions.queryKey,
       });
     },
@@ -186,10 +204,7 @@ export function useFolderMutations({
         const idx = node.folders.findIndex((f) => f.id === folderId);
         if (idx !== -1) {
           removedNode = node.folders[idx];
-          node.folders = [
-            ...node.folders.slice(0, idx),
-            ...node.folders.slice(idx + 1),
-          ];
+          node.folders = [...node.folders.slice(0, idx), ...node.folders.slice(idx + 1)];
           return true;
         }
         for (const f of node.folders) if (remove(f)) return true;
@@ -216,9 +231,7 @@ export function useFolderMutations({
         });
         return next;
       });
-      setActiveParentId((prev) =>
-        prev && removedIds.includes(prev) ? null : prev,
-      );
+      setActiveParentId((prev) => (prev && removedIds.includes(prev) ? null : prev));
 
       // Update the query cache with the folder structure excluding the deleted folder
       queryClient.setQueryData(folderQueryOptions.queryKey, draft);
@@ -227,22 +240,12 @@ export function useFolderMutations({
 
       // If the currently open note is inside the deleted folder subtree, redirect
       if (currentOpenNoteId && removedNode) {
-        const containsNote = (
-          node: FolderWithItems,
-          noteId: string,
-        ): boolean => {
-          if (node.notes.some((n) => n.id === noteId)) return true;
-          for (const f of node.folders)
-            if (containsNote(f, noteId)) return true;
-          return false;
-        };
-
         if (containsNote(removedNode, currentOpenNoteId)) {
           const nextNote = getMostRecentlyUpdatedNote(draft);
           if (nextNote) {
-            navigate({ to: "/notes/$noteId", params: { noteId: nextNote.id } });
+            await navigate({ to: "/notes/$noteId", params: { noteId: nextNote.id } });
           } else {
-            navigate({ to: "/" });
+            await navigate({ to: "/" });
           }
         }
       }
@@ -259,9 +262,9 @@ export function useFolderMutations({
       });
       toast.error(apiError.details, cancelToastEl);
     },
-    onSettled: () => {
+    onSettled: async () => {
       // Invalidate queries to ensure fresh data is fetched
-      queryClient.invalidateQueries({
+      await queryClient.invalidateQueries({
         queryKey: folderQueryOptions.queryKey,
       });
     },
@@ -318,9 +321,9 @@ export function useFolderMutations({
       });
       toast.error(apiError.details, cancelToastEl);
     },
-    onSettled: () => {
+    onSettled: async () => {
       // Invalidate queries to ensure fresh data is fetched
-      queryClient.invalidateQueries({
+      await queryClient.invalidateQueries({
         queryKey: folderQueryOptions.queryKey,
       });
     },
@@ -345,27 +348,6 @@ export function useFolderMutations({
       );
       if (!previous) return { previous: null as FolderWithItems | null };
 
-      // Prevent circular moves
-      const isDescendant = (
-        node: FolderWithItems,
-        targetId: string,
-      ): boolean => {
-        if (node.id === targetId) return true;
-        return node.folders.some((f) => isDescendant(f, targetId));
-      };
-
-      const findFolder = (
-        node: FolderWithItems,
-        id: string,
-      ): FolderWithItems | null => {
-        if (node.id === id) return node;
-        for (const f of node.folders) {
-          const found = findFolder(f, id);
-          if (found) return found;
-        }
-        return null;
-      };
-
       const folderToMove = findFolder(previous, folderId);
       if (!folderToMove || isDescendant(folderToMove, parentFolderId)) {
         return { previous };
@@ -377,10 +359,7 @@ export function useFolderMutations({
       const removeFrom = (node: FolderWithItems): boolean => {
         const idx = node.folders.findIndex((f) => f.id === folderId);
         if (idx !== -1) {
-          node.folders = [
-            ...node.folders.slice(0, idx),
-            ...node.folders.slice(idx + 1),
-          ];
+          node.folders = [...node.folders.slice(0, idx), ...node.folders.slice(idx + 1)];
           return true;
         }
         for (const f of node.folders) if (removeFrom(f)) return true;
@@ -409,8 +388,8 @@ export function useFolderMutations({
       });
       toast.error(apiError.details, cancelToastEl);
     },
-    onSettled: () => {
-      queryClient.invalidateQueries({
+    onSettled: async () => {
+      await queryClient.invalidateQueries({
         queryKey: folderQueryOptions.queryKey,
       });
     },

@@ -1,5 +1,5 @@
+import type { User } from "@repo/db/schemas/auth.schema";
 import type { Note } from "@repo/db/schemas/note.schema";
-import type { User } from "@repo/db/schemas/user.schema";
 import type { FolderWithItems } from "@repo/db/validators/folder.validator";
 import type { QueryClient } from "@tanstack/react-query";
 import { useMutation } from "@tanstack/react-query";
@@ -12,19 +12,9 @@ import { useSidebar } from "@/components/ui/sidebar";
 import { cancelToastEl } from "@/components/ui/toaster";
 import { apiErrorHandler } from "@/lib/handle-api-error";
 import { queryKeys } from "@/lib/query";
-import {
-  getMostRecentlyUpdatedNote,
-  parseNoteIdFromPath,
-  suggestUniqueTitle,
-} from "@/lib/utils";
+import { getMostRecentlyUpdatedNote, parseNoteIdFromPath, suggestUniqueTitle } from "@/lib/utils";
 import { folderQueryOptions } from "@/server/folder";
-import {
-  $createNote,
-  $deleteNote,
-  $makeNoteCopy,
-  $moveNote,
-  $renameNote,
-} from "@/server/note";
+import { $createNote, $deleteNote, $makeNoteCopy, $moveNote, $renameNote } from "@/server/note";
 
 type Params = {
   queryClient: QueryClient;
@@ -33,12 +23,35 @@ type Params = {
   setActiveNoteParentId: React.Dispatch<React.SetStateAction<string | null>>;
 };
 
-export function useNoteMutations({
-  queryClient,
-  rootFolder,
-  user,
-  setActiveNoteParentId,
-}: Params) {
+// A shared deep clone helper needed to avoid mutating the existing state
+// directly when performing optimistic updates. This is a recursive function
+// because FolderWithItems is a nested structure with folders containing
+// more folders recursively.
+const clone = (node: FolderWithItems): FolderWithItems => ({
+  ...node,
+  folders: node.folders.map(clone),
+  notes: [...node.notes],
+});
+
+// A recursive function to find a note and its parent folder by note ID.
+const findNoteAndParent = (
+  root: FolderWithItems,
+  noteId: string,
+): { parent: FolderWithItems; note: Note } | null => {
+  // Direct match in current folder
+  const direct = root.notes.find((n) => n.id === noteId);
+  if (direct) {
+    return { parent: root, note: direct };
+  }
+  // Recurse into child folders
+  for (const f of root.folders) {
+    const found = findNoteAndParent(f, noteId);
+    if (found) return found;
+  }
+  return null;
+};
+
+export function useNoteMutations({ queryClient, rootFolder, user, setActiveNoteParentId }: Params) {
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -71,34 +84,6 @@ export function useNoteMutations({
     });
   const isNotePending = (id: string) => pendingNoteIds.has(id);
 
-  // A shared deep clone helper needed to avoid mutating the existing state
-  // directly when performing optimistic updates. This is a recursive function
-  // because FolderWithItems is a nested structure with folders containing
-  // more folders recursively.
-  const clone = (node: FolderWithItems): FolderWithItems => ({
-    ...node,
-    folders: node.folders.map(clone),
-    notes: [...node.notes],
-  });
-
-  // A recursive function to find a note and its parent folder by note ID.
-  const findNoteAndParent = (
-    root: FolderWithItems,
-    noteId: string,
-  ): { parent: FolderWithItems; note: Note } | null => {
-    // Direct match in current folder
-    const direct = root.notes.find((n) => n.id === noteId);
-    if (direct) {
-      return { parent: root, note: direct };
-    }
-    // Recurse into child folders
-    for (const f of root.folders) {
-      const found = findNoteAndParent(f, noteId);
-      if (found) return found;
-    }
-    return null;
-  };
-
   /* CREATE NOTE */
   const createNoteMutation = useMutation({
     mutationKey: ["create-note"],
@@ -106,8 +91,7 @@ export function useNoteMutations({
       createNoteFn({ data: { title: vars.title, folderId: vars.parentId } }),
     onMutate: async (vars) => {
       const parentId = vars.parentId ?? rootFolder?.id;
-      if (!parentId || !rootFolder)
-        return { previous: null as FolderWithItems | null };
+      if (!parentId || !rootFolder) return { previous: null as FolderWithItems | null };
 
       // Cancel any outgoing refetches (so they don't overwrite the optimistic update)
       await queryClient.cancelQueries({
@@ -162,7 +146,7 @@ export function useNoteMutations({
       setActiveNoteParentId(null);
 
       // Navigate to temp note immediately
-      navigate({
+      await navigate({
         to: "/notes/$noteId",
         params: { noteId: tempId },
       });
@@ -183,14 +167,12 @@ export function useNoteMutations({
       });
       toast.error(apiError.details, cancelToastEl);
     },
-    onSuccess: (data, _vars, ctx) => {
+    onSuccess: async (data, _vars, ctx) => {
       if (!ctx?.tempId) return;
 
       // If mutation succeeds, get the real new note from the server response
       const serverNote = data.data as Note;
-      const current = queryClient.getQueryData<FolderWithItems | null>(
-        folderQueryOptions.queryKey,
-      );
+      const current = queryClient.getQueryData<FolderWithItems | null>(folderQueryOptions.queryKey);
       if (!current) return;
 
       // Replace the temporary note in the folder structure with the real one
@@ -223,18 +205,18 @@ export function useNoteMutations({
       // Update URL to real ID if still on temp note page
       const currentPath = location.pathname;
       if (currentPath.includes(ctx.tempId)) {
-        navigate({
+        await navigate({
           to: "/notes/$noteId",
           params: { noteId: serverNote.id },
           replace: true,
         });
       }
     },
-    onSettled: (data) => {
-      queryClient.invalidateQueries({
+    onSettled: async (data) => {
+      await queryClient.invalidateQueries({
         queryKey: folderQueryOptions.queryKey,
       });
-      queryClient.invalidateQueries({
+      await queryClient.invalidateQueries({
         queryKey: queryKeys.note(data?.data.id ?? ""),
       });
     },
@@ -243,8 +225,7 @@ export function useNoteMutations({
   /* DELETE NOTE */
   const deleteNoteMutation = useMutation({
     mutationKey: ["delete-note"],
-    mutationFn: async (vars: { noteId: string }) =>
-      deleteNoteFn({ data: { noteId: vars.noteId } }),
+    mutationFn: async (vars: { noteId: string }) => deleteNoteFn({ data: { noteId: vars.noteId } }),
     onMutate: async ({ noteId }) => {
       // Cancel any outgoing refetches (so they don't overwrite the optimistic update)
       await queryClient.cancelQueries({
@@ -263,10 +244,7 @@ export function useNoteMutations({
       const removeNote = (node: FolderWithItems): boolean => {
         const idx = node.notes.findIndex((n) => n.id === noteId);
         if (idx !== -1) {
-          node.notes = [
-            ...node.notes.slice(0, idx),
-            ...node.notes.slice(idx + 1),
-          ];
+          node.notes = [...node.notes.slice(0, idx), ...node.notes.slice(idx + 1)];
           removed = true;
           return true;
         }
@@ -292,15 +270,15 @@ export function useNoteMutations({
           const note = getMostRecentlyUpdatedNote(optimisticRF);
 
           if (note) {
-            navigate({
+            await navigate({
               to: "/notes/$noteId",
               params: { noteId: note.id },
             });
           } else {
-            navigate({ to: "/" });
+            await navigate({ to: "/" });
           }
         } else {
-          navigate({ to: "/" });
+          await navigate({ to: "/" });
         }
       }
 
@@ -316,8 +294,8 @@ export function useNoteMutations({
       });
       toast.error(apiError.details, cancelToastEl);
     },
-    onSettled: () => {
-      queryClient.invalidateQueries({
+    onSettled: async () => {
+      await queryClient.invalidateQueries({
         queryKey: folderQueryOptions.queryKey,
       });
     },
@@ -373,11 +351,11 @@ export function useNoteMutations({
       });
       toast.error(apiError.details, cancelToastEl);
     },
-    onSettled: (data) => {
-      queryClient.invalidateQueries({
+    onSettled: async (data) => {
+      await queryClient.invalidateQueries({
         queryKey: folderQueryOptions.queryKey,
       });
-      queryClient.invalidateQueries({
+      await queryClient.invalidateQueries({
         queryKey: queryKeys.note(data?.data.id ?? ""),
       });
     },
@@ -386,8 +364,7 @@ export function useNoteMutations({
   /* COPY NOTE */
   const copyNoteMutation = useMutation({
     mutationKey: ["copy-note"],
-    mutationFn: async (vars: { noteId: string }) =>
-      copyNoteFn({ data: { noteId: vars.noteId } }),
+    mutationFn: async (vars: { noteId: string }) => copyNoteFn({ data: { noteId: vars.noteId } }),
     onMutate: async ({ noteId }) => {
       if (!rootFolder)
         return {
@@ -459,14 +436,12 @@ export function useNoteMutations({
       });
       toast.error(apiError.details, cancelToastEl);
     },
-    onSuccess: (data, _vars, ctx) => {
+    onSuccess: async (data, _vars, ctx) => {
       if (!ctx?.tempId) return;
 
       // If mutation succeeds, get the real copied note from the server response
       const serverNote = data.data as Note;
-      const current = queryClient.getQueryData<FolderWithItems | null>(
-        folderQueryOptions.queryKey,
-      );
+      const current = queryClient.getQueryData<FolderWithItems | null>(folderQueryOptions.queryKey);
       if (!current) return;
 
       // Replace the temporary copied note in the folder structure with the real one
@@ -498,7 +473,7 @@ export function useNoteMutations({
       unmarkPending(ctx.tempId);
 
       // Navigate to the new note's page
-      navigate({
+      await navigate({
         to: "/notes/$noteId",
         params: { noteId: serverNote.id },
       });
@@ -506,11 +481,11 @@ export function useNoteMutations({
       // Close the sidebar on mobile to show the copied note
       setOpenMobile(false);
     },
-    onSettled: (data) => {
-      queryClient.invalidateQueries({
+    onSettled: async (data) => {
+      await queryClient.invalidateQueries({
         queryKey: folderQueryOptions.queryKey,
       });
-      queryClient.invalidateQueries({
+      await queryClient.invalidateQueries({
         queryKey: queryKeys.note(data?.data.id ?? ""),
       });
     },
@@ -519,8 +494,7 @@ export function useNoteMutations({
   /* MOVE NOTE */
   const moveNoteMutation = useMutation({
     mutationKey: ["move-note"],
-    mutationFn: async (vars: { noteId: string; folderId: string }) =>
-      moveNoteFn({ data: vars }),
+    mutationFn: async (vars: { noteId: string; folderId: string }) => moveNoteFn({ data: vars }),
     onMutate: async ({ noteId, folderId }) => {
       if (!rootFolder) return { previous: null as FolderWithItems | null };
 
@@ -554,10 +528,7 @@ export function useNoteMutations({
 
       const newParent = findFolder(draft);
       if (newParent) {
-        newParent.notes = [
-          ...newParent.notes,
-          { ...note, folderId, updatedAt: new Date() },
-        ];
+        newParent.notes = [...newParent.notes, { ...note, folderId, updatedAt: new Date() }];
       }
 
       queryClient.setQueryData(folderQueryOptions.queryKey, draft);
@@ -572,8 +543,8 @@ export function useNoteMutations({
       });
       toast.error(apiError.details, cancelToastEl);
     },
-    onSettled: () => {
-      queryClient.invalidateQueries({
+    onSettled: async () => {
+      await queryClient.invalidateQueries({
         queryKey: folderQueryOptions.queryKey,
       });
     },

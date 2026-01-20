@@ -1,17 +1,17 @@
+import type { Note } from "../schemas/note.schema";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
-import z from "zod";
+import { z } from "zod";
 
 import { type Folder, folder } from "../schemas/folder.schema";
-import type { Note } from "../schemas/note.schema";
-import {
-  EncryptedNoteSelectSchema,
-  NoteMetadataSchema,
-} from "./note.validator";
+import { EncryptedNoteSelectSchema, NoteMetadataSchema } from "./note.validator";
 
 export const FolderSelectSchema = createSelectSchema(folder).extend({
-  createdAt: z.iso.datetime(),
-  updatedAt: z.iso.datetime(),
-  deletedAt: z.iso.datetime().nullable(),
+  createdAt: z.number().transform((n) => new Date(n)),
+  updatedAt: z.number().transform((n) => new Date(n)),
+  deletedAt: z
+    .number()
+    .transform((n) => new Date(n))
+    .nullable(),
 });
 
 export const FolderInsertSchema = createInsertSchema(folder)

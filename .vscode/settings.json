@@ -1,10 +1,18 @@
 {
-  "editor.defaultFormatter": "biomejs.biome",
+  "oxc.fmt.configPath": ".oxfmtrc.json",
+  "editor.defaultFormatter": "oxc.oxc-vscode",
+  "editor.formatOnSave": true,
   "editor.codeActionsOnSave": {
-    "source.fixAll.biome": "explicit",
-    "source.organizeImports": "never",
-    "source.organizeImports.biome": "explicit",
-    "source.action.useSortedAttributes.biome": "explicit"
+    "source.fixAll.oxc": "always",
+    "oxc.typeAware": "always"
+  },
+  "[dockercompose]": {
+    "editor.defaultFormatter": "oxc.oxc-vscode",
+    "editor.formatOnSave": true
+  },
+  "[github-actions-workflow]": {
+    "editor.defaultFormatter": "oxc.oxc-vscode",
+    "editor.formatOnSave": true
   },
   "files.watcherExclude": {
     "**/routeTree.gen.ts": true

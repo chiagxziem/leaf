@@ -18,11 +18,7 @@ services:
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
-      test:
-        [
-          "CMD-SHELL",
-          "pg_isready -U ${PG_USER:-leaf_admin} -d ${PG_NAME:-leaf}",
-        ]
+      test: ["CMD-SHELL", "pg_isready -U ${PG_USER:-leaf_admin} -d ${PG_NAME:-leaf}"]
       interval: 10s
       timeout: 5s
       retries: 5

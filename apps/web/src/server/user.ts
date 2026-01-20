@@ -1,11 +1,11 @@
-import type { User } from "@repo/db/schemas/user.schema";
+import type { ApiSuccessResponse } from "@/lib/types";
+import type { User } from "@repo/db/schemas/auth.schema";
 import { queryOptions } from "@tanstack/react-query";
 import { createServerFn } from "@tanstack/react-start";
 import { isAxiosError } from "axios";
 
 import { axiosClient, axiosErrMsg } from "@/lib/axios";
 import { queryKeys } from "@/lib/query";
-import type { ApiSuccessResponse } from "@/lib/types";
 import { headersMiddleware } from "@/middleware/headers-middleware";
 
 //* GET USER

@@ -1,10 +1,11 @@
-import { db } from "@repo/db";
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { bearer } from "better-auth/plugins";
 
 import { createRootFolder } from "@/queries/folder-queries";
-import env from "./env";
+import { db } from "@repo/db";
+
+import { env } from "./env";
 
 export const auth = betterAuth({
   database: drizzleAdapter(db, {
@@ -28,7 +29,7 @@ export const auth = betterAuth({
     user: {
       create: {
         after: async (user) => {
-          createRootFolder(user.id);
+          await createRootFolder(user.id);
         },
       },
     },

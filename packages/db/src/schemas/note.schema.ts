@@ -1,17 +1,10 @@
 import { type InferSelectModel, relations, sql } from "drizzle-orm";
-import {
-  boolean,
-  check,
-  index,
-  pgTable,
-  text,
-  timestamp,
-  uuid,
-} from "drizzle-orm/pg-core";
+import { boolean, check, index, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
 
 import { timestamps } from "../lib/helpers";
+// oxlint-disable-next-line import/no-cycle
+import { user } from "./auth.schema";
 import { folder } from "./folder.schema";
-import { user } from "./user.schema";
 
 export const note = pgTable(
   "note",
@@ -32,10 +25,7 @@ export const note = pgTable(
     ...timestamps,
   },
   (table) => [
-    check(
-      "note_content_size_limit",
-      sql`length(${table.contentEncrypted}) <= 4194304`,
-    ),
+    check("note_content_size_limit", sql`length(${table.contentEncrypted}) <= 4194304`),
     index("idx_note_user_id").on(table.userId),
     index("idx_note_folder_id").on(table.folderId),
     index("idx_note_not_deleted")

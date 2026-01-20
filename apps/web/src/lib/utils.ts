@@ -39,10 +39,7 @@ export const initialsFromName = (fullName: string): string => {
 
   const firstInitial = parts[0][0]?.toUpperCase() ?? "";
   const lastInitial =
-    (parts.length === 2
-      ? parts[1][0]
-      : parts[parts.length - 1][0]
-    )?.toUpperCase() ?? "";
+    (parts.length === 2 ? parts[1][0] : parts[parts.length - 1][0])?.toUpperCase() ?? "";
   return firstInitial + lastInitial;
 };
 
@@ -73,9 +70,7 @@ export const maskEmail = (input: string): string => {
  * @param folder Root folder to start counting from.
  * @returns Object with total counts { folders, notes }.
  */
-export const countFolderStats = (
-  folder: FolderWithItems,
-): { folders: number; notes: number } => {
+export const countFolderStats = (folder: FolderWithItems): { folders: number; notes: number } => {
   let folders = 0;
   let notes = folder.notes?.length || 0;
   if (folder.folders) {
@@ -96,10 +91,10 @@ export const countFolderStats = (
  * @returns { folders, notes } arrays.
  */
 export const sortFolderItems = (folder: FolderWithItems) => {
-  const folders = [...(folder.folders ?? [])].sort((a, b) =>
+  const folders = [...(folder.folders ?? [])].toSorted((a, b) =>
     a.name.localeCompare(b.name, undefined, { sensitivity: "base" }),
   );
-  const notes = [...(folder.notes ?? [])].sort((a, b) =>
+  const notes = [...(folder.notes ?? [])].toSorted((a, b) =>
     a.title.localeCompare(b.title, undefined, { sensitivity: "base" }),
   );
   return { folders, notes };

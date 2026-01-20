@@ -11,8 +11,9 @@ import {
 } from "drizzle-orm/pg-core";
 
 import { timestamps } from "../lib/helpers";
+// oxlint-disable-next-line import/no-cycle
+import { user } from "./auth.schema";
 import { note } from "./note.schema";
-import { user } from "./user.schema";
 
 export const folder = pgTable(
   "folder",

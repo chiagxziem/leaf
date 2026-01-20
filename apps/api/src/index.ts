@@ -6,11 +6,7 @@ import user from "@/services/user/user.route";
 
 const app = createApp();
 
-app
-  .route("/health", health)
-  .route("/user", user)
-  .route("/folders", folder)
-  .route("/notes", note);
+app.route("/health", health).route("/user", user).route("/folders", folder).route("/notes", note);
 
 export default {
   port: 8000,

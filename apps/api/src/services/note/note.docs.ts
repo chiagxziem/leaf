@@ -1,9 +1,5 @@
-import {
-  EncryptedNoteSelectSchema,
-  NoteSelectSchema,
-} from "@repo/db/validators/note.validator";
 import { describeRoute } from "hono-openapi";
-import z from "zod";
+import { z } from "zod";
 
 import HttpStatusCodes from "@/lib/http-status-codes";
 import {
@@ -15,6 +11,7 @@ import {
   getErrDetailsFromErrFields,
 } from "@/lib/openapi";
 import { authExamples, notesExamples } from "@/lib/openapi-examples";
+import { EncryptedNoteSelectSchema, NoteSelectSchema } from "@repo/db/validators/note.validator";
 
 const tags = ["Notes"];
 
@@ -65,20 +62,14 @@ export const createNoteDoc = describeRoute({
       code: "UNAUTHORIZED",
       details: "No session found",
     }),
-    [HttpStatusCodes.NOT_FOUND]: createGenericErrorResponse(
-      "Folder not found",
-      {
-        code: "NOT_FOUND",
-        details: "Folder not found",
-      },
-    ),
-    [HttpStatusCodes.REQUEST_TOO_LONG]: createGenericErrorResponse(
-      "Payload too large",
-      {
-        code: "PAYLOAD_TOO_LARGE",
-        details: "Note content exceeds 2MB limit",
-      },
-    ),
+    [HttpStatusCodes.NOT_FOUND]: createGenericErrorResponse("Folder not found", {
+      code: "NOT_FOUND",
+      details: "Folder not found",
+    }),
+    [HttpStatusCodes.REQUEST_TOO_LONG]: createGenericErrorResponse("Payload too large", {
+      code: "PAYLOAD_TOO_LARGE",
+      details: "Note content exceeds 2MB limit",
+    }),
     [HttpStatusCodes.TOO_MANY_REQUESTS]: createRateLimitErrorResponse(),
     [HttpStatusCodes.INTERNAL_SERVER_ERROR]: createServerErrorResponse(),
   },
@@ -228,21 +219,18 @@ export const moveNoteDoc = describeRoute({
       code: "UNAUTHORIZED",
       details: "No session found",
     }),
-    [HttpStatusCodes.NOT_FOUND]: createErrorResponse(
-      "Note or folder not found",
-      {
-        noteNotFound: {
-          summary: "Note not found",
-          code: "NOTE_NOT_FOUND",
-          details: "Note not found",
-        },
-        folderNotFound: {
-          summary: "Folder not found",
-          code: "FOLDER_NOT_FOUND",
-          details: "Folder not found",
-        },
+    [HttpStatusCodes.NOT_FOUND]: createErrorResponse("Note or folder not found", {
+      noteNotFound: {
+        summary: "Note not found",
+        code: "NOTE_NOT_FOUND",
+        details: "Note not found",
       },
-    ),
+      folderNotFound: {
+        summary: "Folder not found",
+        code: "FOLDER_NOT_FOUND",
+        details: "Folder not found",
+      },
+    }),
     [HttpStatusCodes.TOO_MANY_REQUESTS]: createRateLimitErrorResponse(),
     [HttpStatusCodes.INTERNAL_SERVER_ERROR]: createServerErrorResponse(),
   },
@@ -279,36 +267,26 @@ export const updateNoteDoc = describeRoute({
       code: "UNAUTHORIZED",
       details: "No session found",
     }),
-    [HttpStatusCodes.NOT_FOUND]: createErrorResponse(
-      "Note or folder not found",
-      {
-        noteNotFound: {
-          summary: "Note not found",
-          code: "NOTE_NOT_FOUND",
-          details: "Note not found",
-        },
-        folderNotFound: {
-          summary: "Folder not found",
-          code: "FOLDER_NOT_FOUND",
-          details: "Folder not found",
-        },
+    [HttpStatusCodes.NOT_FOUND]: createErrorResponse("Note or folder not found", {
+      noteNotFound: {
+        summary: "Note not found",
+        code: "NOTE_NOT_FOUND",
+        details: "Note not found",
       },
-    ),
-    [HttpStatusCodes.PRECONDITION_FAILED]: createGenericErrorResponse(
-      "Note was modified",
-      {
-        code: "PRECONDITION_FAILED",
-        details:
-          "Note was modified by another request. Please refresh and try again.",
+      folderNotFound: {
+        summary: "Folder not found",
+        code: "FOLDER_NOT_FOUND",
+        details: "Folder not found",
       },
-    ),
-    [HttpStatusCodes.REQUEST_TOO_LONG]: createGenericErrorResponse(
-      "Payload too large",
-      {
-        code: "PAYLOAD_TOO_LARGE",
-        details: "Note content exceeds 2MB limit",
-      },
-    ),
+    }),
+    [HttpStatusCodes.PRECONDITION_FAILED]: createGenericErrorResponse("Note was modified", {
+      code: "PRECONDITION_FAILED",
+      details: "Note was modified by another request. Please refresh and try again.",
+    }),
+    [HttpStatusCodes.REQUEST_TOO_LONG]: createGenericErrorResponse("Payload too large", {
+      code: "PAYLOAD_TOO_LARGE",
+      details: "Note content exceeds 2MB limit",
+    }),
     [HttpStatusCodes.TOO_MANY_REQUESTS]: createRateLimitErrorResponse(),
     [HttpStatusCodes.INTERNAL_SERVER_ERROR]: createServerErrorResponse(),
   },

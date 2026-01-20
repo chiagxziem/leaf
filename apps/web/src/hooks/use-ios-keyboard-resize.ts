@@ -4,8 +4,7 @@ function isIOSLike(): boolean {
   const ua = navigator.userAgent || "";
   // iPhone/iPad/iPod, plus iPadOS (Mac desktop UA with touch)
   const isiOSDevice = /\b(iPhone|iPad|iPod)\b/i.test(ua);
-  const isIPadOSDesktopUA =
-    /\bMacintosh\b/.test(ua) && navigator.maxTouchPoints > 1;
+  const isIPadOSDesktopUA = /\bMacintosh\b/.test(ua) && navigator.maxTouchPoints > 1;
   return isiOSDevice || isIPadOSDesktopUA;
 }
 

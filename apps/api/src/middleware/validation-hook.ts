@@ -38,9 +38,7 @@ function pathSegmentToString(segment: PropertyKey | PathSegment): string {
 /**
  * Converts a path array to a dot-notation string
  */
-function pathToString(
-  path: readonly (PropertyKey | PathSegment)[] | undefined,
-): string {
+function pathToString(path: readonly (PropertyKey | PathSegment)[] | undefined): string {
   if (!path || path.length === 0) return "";
   return path.map(pathSegmentToString).join(".");
 }
@@ -69,10 +67,7 @@ export const validationHook = (result: ValidationResult, c: Context) => {
       }
     });
 
-    return c.json(
-      errorResponse("INVALID_DATA", details, fields),
-      HttpStatusCodes.BAD_REQUEST,
-    );
+    return c.json(errorResponse("INVALID_DATA", details, fields), HttpStatusCodes.BAD_REQUEST);
   }
 };
 
@@ -95,16 +90,11 @@ export const createValidationHook = (errorCode: string) => {
         fields[fieldPath || "value"] = issue.message;
 
         if (index === 0) {
-          details = fieldPath
-            ? `${fieldPath}: ${issue.message}`
-            : issue.message;
+          details = fieldPath ? `${fieldPath}: ${issue.message}` : issue.message;
         }
       });
 
-      return c.json(
-        errorResponse(errorCode, details, fields),
-        HttpStatusCodes.BAD_REQUEST,
-      );
+      return c.json(errorResponse(errorCode, details, fields), HttpStatusCodes.BAD_REQUEST);
     }
   };
 };

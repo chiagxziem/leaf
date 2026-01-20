@@ -23,4 +23,4 @@ const runMigrations = async () => {
   }
 };
 
-runMigrations();
+void runMigrations();

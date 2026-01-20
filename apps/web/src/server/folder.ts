@@ -1,13 +1,13 @@
+import type { ApiSuccessResponse } from "@/lib/types";
 import type { Folder } from "@repo/db/schemas/folder.schema";
 import type { FolderWithItems } from "@repo/db/validators/folder.validator";
 import { queryOptions } from "@tanstack/react-query";
 import { createServerFn } from "@tanstack/react-start";
 import { isAxiosError } from "axios";
-import z from "zod";
+import { z } from "zod";
 
 import { axiosClient, axiosErrMsg } from "@/lib/axios";
 import { queryKeys } from "@/lib/query";
-import type { ApiSuccessResponse } from "@/lib/types";
 import { headersMiddleware } from "@/middleware/headers-middleware";
 
 //* ENSURE ROOT FOLDER
@@ -33,13 +33,10 @@ export const $getFolder = createServerFn()
   .inputValidator(z.string().min(1).optional())
   .handler(async ({ context, data: folderId }) => {
     try {
-      const res = await axiosClient.get<ApiSuccessResponse<FolderWithItems>>(
-        "/folders",
-        {
-          headers: context.headers,
-          params: folderId ? { folderId } : undefined,
-        },
-      );
+      const res = await axiosClient.get<ApiSuccessResponse<FolderWithItems>>("/folders", {
+        headers: context.headers,
+        params: folderId ? { folderId } : undefined,
+      });
 
       return res.data.data;
     } catch (err) {
@@ -77,13 +74,9 @@ export const $createFolder = createServerFn()
       name: data.name,
     };
 
-    const res = await axiosClient.post<ApiSuccessResponse<Folder>>(
-      "/folders",
-      payload,
-      {
-        headers: context.headers,
-      },
-    );
+    const res = await axiosClient.post<ApiSuccessResponse<Folder>>("/folders", payload, {
+      headers: context.headers,
+    });
 
     return res.data;
   });
@@ -152,10 +145,7 @@ export const $deleteFolder = createServerFn()
     }),
   )
   .handler(async ({ context, data }) => {
-    await axiosClient.delete<ApiSuccessResponse<Folder>>(
-      `/folders/${data.folderId}`,
-      {
-        headers: context.headers,
-      },
-    );
+    await axiosClient.delete<ApiSuccessResponse<Folder>>(`/folders/${data.folderId}`, {
+      headers: context.headers,
+    });
   });

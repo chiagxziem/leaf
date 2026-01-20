@@ -3,13 +3,13 @@ import type { DecryptedNote } from "@repo/db/validators/note.validator";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute, redirect, useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
-import CodeBlockLowlight from "@tiptap/extension-code-block-lowlight";
+import { CodeBlockLowlight } from "@tiptap/extension-code-block-lowlight";
 import { TaskItem, TaskList } from "@tiptap/extension-list";
-import Subscript from "@tiptap/extension-subscript";
-import Superscript from "@tiptap/extension-superscript";
+import { Subscript } from "@tiptap/extension-subscript";
+import { Superscript } from "@tiptap/extension-superscript";
 import { Underline } from "@tiptap/extension-underline";
 import { type Editor, EditorContent, useEditor } from "@tiptap/react";
-import StarterKit from "@tiptap/starter-kit";
+import { StarterKit } from "@tiptap/starter-kit";
 import { useDebounce } from "@uidotdev/usehooks";
 import { common, createLowlight } from "lowlight";
 import {
@@ -72,20 +72,12 @@ import {
   InputGroupButton,
   InputGroupInput,
 } from "@/components/ui/input-group";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Separator } from "@/components/ui/separator";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Spinner } from "@/components/ui/spinner";
 import { cancelToastEl } from "@/components/ui/toaster";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { apiErrorHandler } from "@/lib/handle-api-error";
 import { queryKeys } from "@/lib/query";
 import { cn, getMostRecentlyUpdatedNote } from "@/lib/utils";
@@ -108,12 +100,9 @@ export const Route = createFileRoute("/_main/notes/$noteId")({
       return;
     }
 
-    const note = await context.queryClient.ensureQueryData(
-      singleNoteQueryOptions(params.noteId),
-    );
+    const note = await context.queryClient.ensureQueryData(singleNoteQueryOptions(params.noteId));
 
-    const rootFolder =
-      await context.queryClient.ensureQueryData(folderQueryOptions);
+    const rootFolder = await context.queryClient.ensureQueryData(folderQueryOptions);
 
     if (!note) {
       if (rootFolder) {
@@ -135,9 +124,7 @@ export const Route = createFileRoute("/_main/notes/$noteId")({
     return { note };
   },
   loader: async ({ params, context }) => {
-    const note = await context.queryClient.ensureQueryData(
-      singleNoteQueryOptions(params.noteId),
-    );
+    const note = await context.queryClient.ensureQueryData(singleNoteQueryOptions(params.noteId));
 
     return { noteId: params.noteId, note };
   },
@@ -169,14 +156,7 @@ function NotePage() {
   // Merge title/content states into a single "Note" state for the header
   // Precedence: error > offline > saving > dirty > savedRecently > idle
   const noteState: SyncState = (() => {
-    const order: SyncState[] = [
-      "error",
-      "offline",
-      "saving",
-      "dirty",
-      "savedRecently",
-      "idle",
-    ];
+    const order: SyncState[] = ["error", "offline", "saving", "dirty", "savedRecently", "idle"];
 
     const has = (s: SyncState) => titleState === s || contentState === s;
 
@@ -317,14 +297,13 @@ const NoteView = ({
         });
       }
     }
+    // oxlint-disable-next-line eslint-plugin-react-hooks/exhaustive-deps
   }, [note.id, note.content, editor]);
 
   // Read the latest title from the cache to avoid overwriting a rename
   // that may have landed since the NoteView was rendered
   const getCurrentTitle = () => {
-    const cached = queryClient.getQueryData<DecryptedNote>(
-      queryKeys.note(note.id),
-    );
+    const cached = queryClient.getQueryData<DecryptedNote>(queryKeys.note(note.id));
     return cached?.title ?? note.title;
   };
 
@@ -339,37 +318,32 @@ const NoteView = ({
       setContentState("saving");
       return { seq };
     },
-    onSuccess: (_res, html, ctx) => {
+    onSuccess: async (_res, html, ctx) => {
       // Drop stale responses (race condition guard)
       if (ctx?.seq !== contentSeqRef.current) return;
       setContentState("savedRecently");
       setTimeout(() => setContentState("idle"), 1000);
 
       // Patch the active note in cache with exactly what we saved
-      queryClient.setQueryData<DecryptedNote>(
-        queryKeys.note(note.id),
-        (prev) =>
-          prev
-            ? {
-                ...prev,
-                title: getCurrentTitle(),
-                content: html,
-                updatedAt: new Date(),
-              }
-            : prev,
+      queryClient.setQueryData<DecryptedNote>(queryKeys.note(note.id), (prev) =>
+        prev
+          ? {
+              ...prev,
+              title: getCurrentTitle(),
+              content: html,
+              updatedAt: new Date(),
+            }
+          : prev,
       );
 
       // Sidebar ordering depends on updatedAt, so refresh the folder tree
-      queryClient.invalidateQueries({ queryKey: folderQueryOptions.queryKey });
+      await queryClient.invalidateQueries({ queryKey: folderQueryOptions.queryKey });
 
       setContentDirty(false);
     },
     onError: () => {
       setContentState("error");
-      toast.error(
-        "Failed to save content. Check your connection and try again.",
-        cancelToastEl,
-      );
+      toast.error("Failed to save content. Check your connection and try again.", cancelToastEl);
     },
   });
 
@@ -381,9 +355,7 @@ const NoteView = ({
       if (!contentDirty) return;
 
       const html = editor.getHTML();
-      const cached = queryClient.getQueryData<DecryptedNote>(
-        queryKeys.note(note.id),
-      );
+      const cached = queryClient.getQueryData<DecryptedNote>(queryKeys.note(note.id));
 
       if (html !== (cached?.content ?? note.content)) {
         saveContent(html);
@@ -403,21 +375,12 @@ const NoteView = ({
   useEffect(() => {
     if (!contentDirty) return;
 
-    const cached = queryClient.getQueryData<DecryptedNote>(
-      queryKeys.note(note.id),
-    );
+    const cached = queryClient.getQueryData<DecryptedNote>(queryKeys.note(note.id));
     const lastSaved = cached?.content ?? note.content;
     if (debouncedContent !== lastSaved) {
       saveContent(debouncedContent);
     }
-  }, [
-    debouncedContent,
-    contentDirty,
-    note.id,
-    note.content,
-    queryClient,
-    saveContent,
-  ]);
+  }, [debouncedContent, contentDirty, note.id, note.content, queryClient, saveContent]);
 
   // Toggle editor editability when mode changes
   useEffect(() => {
@@ -542,13 +505,7 @@ const NotePageHeader = ({
   );
 };
 
-const NotePageFooter = ({
-  isEditing,
-  editor,
-}: {
-  isEditing: boolean;
-  editor: Editor | null;
-}) => {
+const NotePageFooter = ({ isEditing, editor }: { isEditing: boolean; editor: Editor | null }) => {
   const [, forceUpdate] = useState({});
   const [linkPopoverOpen, setLinkPopoverOpen] = useState(false);
   const [linkUrl, setLinkUrl] = useState("");
@@ -602,12 +559,7 @@ const NotePageFooter = ({
     if (!isValidUrl) return;
 
     // Set link with the URL
-    editor
-      .chain()
-      .focus()
-      .extendMarkRange("link")
-      .setLink({ href: linkUrl.trim() })
-      .run();
+    editor.chain().focus().extendMarkRange("link").setLink({ href: linkUrl.trim() }).run();
 
     setLinkPopoverOpen(false);
     setLinkUrl("");
@@ -640,16 +592,14 @@ const NotePageFooter = ({
 
   const ActiveListIcon = getActiveListIcon();
   const isAnyListActive =
-    editor.isActive("bulletList") ||
-    editor.isActive("orderedList") ||
-    editor.isActive("taskList");
+    editor.isActive("bulletList") || editor.isActive("orderedList") || editor.isActive("taskList");
 
   const ActiveHeadingIcon = getActiveHeadingIcon();
   const isAnyHeadingActive = editor.isActive("heading");
 
   return (
     <footer
-      className="hide-scrollbar sticky bottom-0 isolate z-10 flex h-10 w-full items-center gap-2 overflow-x-auto border-muted/80 border-t px-3 md:justify-center lg:px-6"
+      className="hide-scrollbar sticky bottom-0 isolate z-10 flex h-10 w-full items-center gap-2 overflow-x-auto border-t border-muted/80 px-3 md:justify-center lg:px-6"
       // Lift above the on-screen keyboard on iOS
       style={{ transform: "translateY(calc(-1 * var(--kb, 0px)))" }}
     >
@@ -683,18 +633,12 @@ const NotePageFooter = ({
         </Tooltip>
       </div>
 
-      <Separator
-        className="data-[orientation=vertical]:h-6"
-        orientation="vertical"
-      />
+      <Separator className="data-[orientation=vertical]:h-6" orientation="vertical" />
 
       <div className="flex items-center justify-center gap-1">
         <Tooltip>
           <TooltipTrigger asChild>
-            <DropdownMenu
-              onOpenChange={setHeadingDropdownOpen}
-              open={headingDropdownOpen}
-            >
+            <DropdownMenu onOpenChange={setHeadingDropdownOpen} open={headingDropdownOpen}>
               <DropdownMenuTrigger asChild>
                 <Button
                   className="w-auto min-w-8 px-1.5"
@@ -946,18 +890,12 @@ const NotePageFooter = ({
         </Tooltip>
       </div>
 
-      <Separator
-        className="data-[orientation=vertical]:h-6"
-        orientation="vertical"
-      />
+      <Separator className="data-[orientation=vertical]:h-6" orientation="vertical" />
 
       <div className="flex items-center justify-center gap-1">
         <Tooltip>
           <TooltipTrigger asChild>
-            <DropdownMenu
-              onOpenChange={setListDropdownOpen}
-              open={listDropdownOpen}
-            >
+            <DropdownMenu onOpenChange={setListDropdownOpen} open={listDropdownOpen}>
               <DropdownMenuTrigger asChild>
                 <Button
                   className="w-auto min-w-8 px-1.5"
@@ -988,10 +926,7 @@ const NotePageFooter = ({
                   <TbList className="text-muted-foreground" />
                   <span>Bullet List</span>
                   <TbCheck
-                    className={cn(
-                      "ml-auto size-4",
-                      !editor.isActive("bulletList") && "invisible",
-                    )}
+                    className={cn("ml-auto size-4", !editor.isActive("bulletList") && "invisible")}
                   />
                 </DropdownMenuItem>
                 <DropdownMenuItem
@@ -1002,10 +937,7 @@ const NotePageFooter = ({
                   <TbListNumbers className="text-muted-foreground" />
                   <span>Ordered List</span>
                   <TbCheck
-                    className={cn(
-                      "ml-auto size-4",
-                      !editor.isActive("orderedList") && "invisible",
-                    )}
+                    className={cn("ml-auto size-4", !editor.isActive("orderedList") && "invisible")}
                   />
                 </DropdownMenuItem>
                 <DropdownMenuItem
@@ -1016,10 +948,7 @@ const NotePageFooter = ({
                   <TbListCheck className="text-muted-foreground" />
                   <span>Task List</span>
                   <TbCheck
-                    className={cn(
-                      "ml-auto size-4",
-                      !editor.isActive("taskList") && "invisible",
-                    )}
+                    className={cn("ml-auto size-4", !editor.isActive("taskList") && "invisible")}
                   />
                 </DropdownMenuItem>
               </DropdownMenuContent>
@@ -1069,10 +998,7 @@ const NotePageFooter = ({
         </Tooltip>
       </div>
 
-      <Separator
-        className="data-[orientation=vertical]:h-6"
-        orientation="vertical"
-      />
+      <Separator className="data-[orientation=vertical]:h-6" orientation="vertical" />
 
       <div className="flex items-center justify-center gap-1">
         <Tooltip>
@@ -1151,8 +1077,7 @@ const TitleTextarea = ({
   useEffect(() => {
     if (!ref) return;
     if (typeof ref === "function") ref(innerRef.current);
-    else
-      (ref as RefObject<HTMLTextAreaElement | null>).current = innerRef.current;
+    else ref.current = innerRef.current;
   }, [ref]);
 
   // useEffect for syncing down external title updates unless the user is actively editing here
@@ -1168,8 +1093,7 @@ const TitleTextarea = ({
   // We still patch the local note cache on success to keep the UI consistent without refetch
   const { mutate: saveTitle } = useMutation({
     mutationKey: ["rename-note-inline", noteId],
-    mutationFn: async (newTitle: string) =>
-      renameNote({ data: { noteId, title: newTitle } }),
+    mutationFn: async (newTitle: string) => renameNote({ data: { noteId, title: newTitle } }),
     onMutate: () => {
       // Bump sequence; any earlier response becomes stale
       const seq = ++titleSeqRef.current;
@@ -1177,7 +1101,7 @@ const TitleTextarea = ({
 
       return { seq };
     },
-    onSuccess: (_res, newTitle, ctx) => {
+    onSuccess: async (_res, newTitle, ctx) => {
       // Drop stale responses (race condition guard)
       if (ctx?.seq !== titleSeqRef.current) return;
 
@@ -1190,16 +1114,13 @@ const TitleTextarea = ({
       );
 
       // Sidebar needs updatedAt to re-sort items
-      queryClient.invalidateQueries({ queryKey: folderQueryOptions.queryKey });
+      await queryClient.invalidateQueries({ queryKey: folderQueryOptions.queryKey });
 
       setDirty(false);
     },
     onError: () => {
       onStatusChange("error");
-      toast.error(
-        "Failed to rename note. Check your connection and try again.",
-        cancelToastEl,
-      );
+      toast.error("Failed to rename note. Check your connection and try again.", cancelToastEl);
     },
   });
 
@@ -1254,7 +1175,7 @@ const TitleTextarea = ({
   if (!isEditing) {
     return (
       <h1
-        className="w-full bg-transparent font-semibold text-2xl leading-tight md:text-3xl"
+        className="w-full bg-transparent text-2xl leading-tight font-semibold md:text-3xl"
         data-mode="read"
       >
         {value}
@@ -1265,7 +1186,7 @@ const TitleTextarea = ({
   return (
     <textarea
       aria-label="Note title"
-      className="field-sizing-content w-full resize-none bg-transparent font-semibold text-2xl leading-tight outline-none focus:outline-none focus:ring-0 md:text-3xl xl:text-4xl"
+      className="field-sizing-content w-full resize-none bg-transparent text-2xl leading-tight font-semibold outline-none focus:ring-0 focus:outline-none md:text-3xl xl:text-4xl"
       onBlur={flushIfChanged}
       onChange={(e) => {
         setValue(e.target.value);
@@ -1278,13 +1199,7 @@ const TitleTextarea = ({
           if (dirty) onStatusChange("saving");
           flushIfChanged();
           onEnter();
-        } else if (
-          e.key === "ArrowDown" &&
-          !e.shiftKey &&
-          !e.altKey &&
-          !e.metaKey &&
-          !e.ctrlKey
-        ) {
+        } else if (e.key === "ArrowDown" && !e.shiftKey && !e.altKey && !e.metaKey && !e.ctrlKey) {
           e.preventDefault();
           if (dirty) onStatusChange("saving");
           flushIfChanged();
@@ -1299,11 +1214,13 @@ const TitleTextarea = ({
   );
 };
 
-const NotePageDropdown = ({
-  titleRef,
-}: {
-  titleRef: RefObject<HTMLTextAreaElement | null>;
-}) => {
+const clone = (node: FolderWithItems): FolderWithItems => ({
+  ...node,
+  folders: node.folders.map(clone),
+  notes: [...node.notes],
+});
+
+const NotePageDropdown = ({ titleRef }: { titleRef: RefObject<HTMLTextAreaElement | null> }) => {
   const { noteId } = Route.useLoaderData();
   const navigate = useNavigate();
   const { queryClient } = Route.useRouteContext();
@@ -1327,11 +1244,6 @@ const NotePageDropdown = ({
       if (!previousFolder) return { previous: null };
 
       // Clone and remove note
-      const clone = (node: FolderWithItems): FolderWithItems => ({
-        ...node,
-        folders: node.folders.map(clone),
-        notes: [...node.notes],
-      });
 
       const draft = clone(previousFolder);
       let removed = false;
@@ -1339,10 +1251,7 @@ const NotePageDropdown = ({
       const removeNote = (node: FolderWithItems): boolean => {
         const idx = node.notes.findIndex((n) => n.id === noteId);
         if (idx !== -1) {
-          node.notes = [
-            ...node.notes.slice(0, idx),
-            ...node.notes.slice(idx + 1),
-          ];
+          node.notes = [...node.notes.slice(0, idx), ...node.notes.slice(idx + 1)];
           removed = true;
           return true;
         }
@@ -1359,9 +1268,9 @@ const NotePageDropdown = ({
       // Navigate away to most recent note or home
       const mostRecent = getMostRecentlyUpdatedNote(draft);
       if (mostRecent) {
-        navigate({ to: "/notes/$noteId", params: { noteId: mostRecent.id } });
+        await navigate({ to: "/notes/$noteId", params: { noteId: mostRecent.id } });
       } else {
-        navigate({ to: "/" });
+        await navigate({ to: "/" });
       }
 
       return { previous: previousFolder };
@@ -1376,8 +1285,8 @@ const NotePageDropdown = ({
       });
       toast.error(apiError.details, cancelToastEl);
     },
-    onSettled: () => {
-      queryClient.invalidateQueries({
+    onSettled: async () => {
+      await queryClient.invalidateQueries({
         queryKey: folderQueryOptions.queryKey,
       });
     },
@@ -1413,26 +1322,11 @@ const NotePageDropdown = ({
 
 // Used to show sync state between the server and the local versions of the note.
 // "savedRecently" is used briefly after success to provide visual feedback
-type SyncState =
-  | "idle"
-  | "dirty"
-  | "saving"
-  | "error"
-  | "offline"
-  | "savedRecently";
+type SyncState = "idle" | "dirty" | "saving" | "error" | "offline" | "savedRecently";
 
-function StatusIcon({
-  state,
-  labelPrefix,
-}: {
-  state: SyncState;
-  labelPrefix: string;
-}) {
+function StatusIcon({ state, labelPrefix }: { state: SyncState; labelPrefix: string }) {
   const common = "size-4";
-  const map: Record<
-    SyncState,
-    { icon: React.ReactNode; label: string; className?: string }
-  > = {
+  const map: Record<SyncState, { icon: React.ReactNode; label: string; className?: string }> = {
     idle: {
       icon: <TbCheck className={common} />,
       label: "Synced",

@@ -1,11 +1,9 @@
 import { createEnv } from "@t3-oss/env-core";
-import z from "zod";
+import { z } from "zod";
 
-const env = createEnv({
+export const env = createEnv({
   server: {
-    NODE_ENV: z
-      .enum(["development", "production", "test"])
-      .default("development"),
+    NODE_ENV: z.enum(["development", "production", "test"]).default("development"),
     API_URL: z.url(),
     WEB_URL: z.url(),
     DOMAIN: z.string().optional(),
@@ -20,5 +18,3 @@ const env = createEnv({
   runtimeEnv: process.env,
   emptyStringAsUndefined: true,
 });
-
-export default env;

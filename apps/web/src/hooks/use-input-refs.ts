@@ -1,8 +1,6 @@
 import { type RefObject, useRef } from "react";
 
-export function useInputRefs(
-  count: number,
-): RefObject<HTMLInputElement | null>[] {
+export function useInputRefs(count: number): RefObject<HTMLInputElement | null>[] {
   const refs = useRef<RefObject<HTMLInputElement | null>[]>([]);
 
   // Initialize refs array if not already done or if count changed

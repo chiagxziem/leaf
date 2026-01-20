@@ -1,5 +1,5 @@
 import { describeRoute } from "hono-openapi";
-import z from "zod";
+import { z } from "zod";
 
 import HttpStatusCodes from "@/lib/http-status-codes";
 import {

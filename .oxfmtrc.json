@@ -1,0 +1,26 @@
+{
+  "$schema": "./node_modules/oxfmt/configuration_schema.json",
+  "experimentalSortImports": {
+    "groups": [
+      ["builtin"],
+      ["external", "external-type"],
+      ["internal", "internal-type"],
+      ["parent", "parent-type", "sibling", "sibling-type"],
+      ["index", "index-type"],
+      ["side-effect"]
+    ],
+    "internalPattern": ["@repo/", "@/"],
+    "sortSideEffects": true
+  },
+  "experimentalTailwindcss": {
+    "stylesheet": "./apps/web/src/styles/app.css",
+    "attributes": ["class", "className"],
+    "functions": ["clsx", "cn", "twMerge"]
+  },
+  "ignorePatterns": [
+    "**/generated/**",
+    "**/migrations/**",
+    "**/*.gen.*",
+    "**/worker-configuration.d.ts"
+  ]
+}

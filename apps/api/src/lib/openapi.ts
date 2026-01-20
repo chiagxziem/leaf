@@ -1,5 +1,5 @@
 import { resolver } from "hono-openapi";
-import z from "zod";
+import { z } from "zod";
 
 /**
  * Helper function to create a success response schema for OpenAPI responses.
@@ -43,9 +43,7 @@ export const createSuccessResponse = <T extends z.ZodType>(
     description,
     content: {
       "application/json": {
-        schema: resolver(
-          createSuccessResponseSchema(schema.details, schema.dataSchema),
-        ),
+        schema: resolver(createSuccessResponseSchema(schema.details, schema.dataSchema)),
       },
     },
   };
@@ -141,8 +139,7 @@ export const createRateLimitErrorResponse = () => {
               status: "error",
               error: {
                 code: "TOO_MANY_REQUESTS",
-                details:
-                  "Too many requests have been made. Please try again later.",
+                details: "Too many requests have been made. Please try again later.",
                 fields: {},
               },
             },

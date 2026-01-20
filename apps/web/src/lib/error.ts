@@ -1,7 +1,6 @@
+import type { ApiErrorResponse } from "@/lib/types";
 import { createSerializationAdapter } from "@tanstack/react-router";
 import { AxiosError, type AxiosResponse } from "axios";
-
-import type { ApiErrorResponse } from "@/lib/types";
 
 export const axiosErrorAdapter = createSerializationAdapter({
   key: "axiosError",

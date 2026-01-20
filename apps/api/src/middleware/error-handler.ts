@@ -2,7 +2,7 @@ import type { ErrorHandler } from "hono";
 import { HTTPException } from "hono/http-exception";
 import type { ContentfulStatusCode } from "hono/utils/http-status";
 
-import env from "@/lib/env";
+import { env } from "@/lib/env";
 import HttpStatusCodes from "@/lib/http-status-codes";
 import { errorResponse } from "@/lib/utils";
 
@@ -16,7 +16,7 @@ const errorHandler: ErrorHandler = (err, c) => {
 
   // Handle Hono HTTPException (thrown by middleware, auth, etc.)
   if (err instanceof HTTPException) {
-    const status = err.status as ContentfulStatusCode;
+    const status = err.status;
     const message = err.message || getDefaultMessageForStatus(status);
 
     // Log client errors in dev, server errors always
@@ -44,10 +44,7 @@ const errorHandler: ErrorHandler = (err, c) => {
   if (err instanceof SyntaxError) {
     console.error("SyntaxError:", err.message);
     return c.json(
-      errorResponse(
-        "BAD_REQUEST",
-        isDev ? err.message : "Invalid request syntax",
-      ),
+      errorResponse("BAD_REQUEST", isDev ? err.message : "Invalid request syntax"),
       HttpStatusCodes.BAD_REQUEST,
     );
   }
@@ -56,10 +53,7 @@ const errorHandler: ErrorHandler = (err, c) => {
   if (err instanceof TypeError) {
     console.error("TypeError:", err);
     return c.json(
-      errorResponse(
-        "INTERNAL_SERVER_ERROR",
-        isDev ? err.message : "An unexpected error occurred",
-      ),
+      errorResponse("INTERNAL_SERVER_ERROR", isDev ? err.message : "An unexpected error occurred"),
       HttpStatusCodes.INTERNAL_SERVER_ERROR,
     );
   }
@@ -70,11 +64,7 @@ const errorHandler: ErrorHandler = (err, c) => {
   return c.json(
     errorResponse(
       "INTERNAL_SERVER_ERROR",
-      isDev
-        ? err instanceof Error
-          ? err.message
-          : String(err)
-        : "An unexpected error occurred",
+      isDev ? (err instanceof Error ? err.message : String(err)) : "An unexpected error occurred",
     ),
     HttpStatusCodes.INTERNAL_SERVER_ERROR,
   );
@@ -83,9 +73,7 @@ const errorHandler: ErrorHandler = (err, c) => {
 /**
  * Type guard for HTTP-like errors with status codes
  */
-function isHttpError(
-  err: unknown,
-): err is { status: number; message: string; code?: string } {
+function isHttpError(err: unknown): err is { status: number; message: string; code?: string } {
   return (
     typeof err === "object" &&
     err !== null &&
@@ -113,9 +101,7 @@ function getCodeForStatus(status: number): string {
     504: "GATEWAY_TIMEOUT",
   };
 
-  return (
-    statusCodes[status] || (status >= 500 ? "SERVER_ERROR" : "CLIENT_ERROR")
-  );
+  return statusCodes[status] || (status >= 500 ? "SERVER_ERROR" : "CLIENT_ERROR");
 }
 
 /**
@@ -137,10 +123,7 @@ function getDefaultMessageForStatus(status: number): string {
     504: "Gateway timeout",
   };
 
-  return (
-    messages[status] ||
-    (status >= 500 ? "An unexpected error occurred" : "An error occurred")
-  );
+  return messages[status] || (status >= 500 ? "An unexpected error occurred" : "An error occurred");
 }
 
 export default errorHandler;

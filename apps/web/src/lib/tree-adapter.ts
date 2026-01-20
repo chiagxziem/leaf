@@ -11,10 +11,7 @@ export type TreeNode = {
 };
 
 // Convert your folder structure to tree nodes
-export function folderToTreeNodes(
-  folder: FolderWithItems,
-  parentId?: string,
-): TreeNode {
+export function folderToTreeNodes(folder: FolderWithItems, parentId?: string): TreeNode {
   return {
     id: folder.id,
     type: "folder",
@@ -54,6 +51,14 @@ export function flattenTree(
   return items;
 }
 
+// Check if a node is a descendant of an ancestor
+function isDescendant(nodeId: string, ancestorId: string): boolean {
+  if (nodeId === ancestorId) return true;
+  // This would need the full tree structure to traverse properly
+  // We'll handle this in the mutation logic instead
+  return false;
+}
+
 // Check if a node can be dropped into a target
 export function canDrop(draggedNode: TreeNode, targetNode: TreeNode): boolean {
   // Can't drop into a note
@@ -64,12 +69,6 @@ export function canDrop(draggedNode: TreeNode, targetNode: TreeNode): boolean {
 
   // Can't drop a folder into its own descendants
   if (draggedNode.type === "folder" && targetNode.parentId) {
-    const isDescendant = (nodeId: string, ancestorId: string): boolean => {
-      if (nodeId === ancestorId) return true;
-      // This would need the full tree structure to traverse properly
-      // We'll handle this in the mutation logic instead
-      return false;
-    };
     return !isDescendant(targetNode.id, draggedNode.id);
   }
 

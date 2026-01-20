@@ -4,10 +4,7 @@
  * @param details - Additional details about the response.
  * @returns An object representing the success response.
  */
-export const successResponse = <TData, TDetails extends string>(
-  data: TData,
-  details: TDetails,
-) => {
+export const successResponse = <TData, TDetails extends string>(data: TData, details: TDetails) => {
   return {
     status: "success" as const,
     details,
@@ -22,11 +19,7 @@ export const successResponse = <TData, TDetails extends string>(
  * @param fields - Optional fields to include in the error response.
  * @returns An object representing the error response.
  */
-export const errorResponse = (
-  code: string,
-  details: string,
-  fields?: Record<string, string>,
-) => {
+export const errorResponse = (code: string, details: string, fields?: Record<string, string>) => {
   return {
     status: "error",
     error: {
@@ -49,9 +42,7 @@ export const stripHyphens = (str: string): string => str.replace(/-/g, "");
  * @param level - The log level to normalize
  * @returns The normalized log level
  */
-export const normalizeLevel = (
-  level: string,
-): "debug" | "info" | "warn" | "error" => {
+export const normalizeLevel = (level: string): "debug" | "info" | "warn" | "error" => {
   const l = level?.toLowerCase();
   if (l === "debug" || l === "info" || l === "warn" || l === "error") {
     return l;

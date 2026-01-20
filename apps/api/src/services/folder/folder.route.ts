@@ -1,12 +1,5 @@
-import { db, eq } from "@repo/db";
-import { folder } from "@repo/db/schemas/folder.schema";
-import {
-  FolderInsertSchema,
-  FolderUpdateSchema,
-  type FolderWithItems,
-} from "@repo/db/validators/folder.validator";
 import { validator } from "hono-openapi";
-import z from "zod";
+import { z } from "zod";
 
 import { createRouter } from "@/app";
 import HttpStatusCodes from "@/lib/http-status-codes";
@@ -23,6 +16,14 @@ import {
   isDescendant,
   softDeleteFolderWithDescendants,
 } from "@/queries/folder-queries";
+import { db, eq } from "@repo/db";
+import { folder } from "@repo/db/schemas/folder.schema";
+import {
+  FolderInsertSchema,
+  FolderUpdateSchema,
+  type FolderWithItems,
+} from "@repo/db/validators/folder.validator";
+
 import {
   createFolderDoc,
   createRootFolderDoc,
@@ -64,10 +65,7 @@ folderRouter.get(
 
       if (!folderWithItems) {
         return c.json(
-          errorResponse(
-            "NOT_FOUND",
-            folderId ? "Folder not found" : "Root folder not found",
-          ),
+          errorResponse("NOT_FOUND", folderId ? "Folder not found" : "Root folder not found"),
           HttpStatusCodes.NOT_FOUND,
         );
       }
@@ -101,10 +99,7 @@ folderRouter.post(
     const folderData = c.req.valid("json");
 
     try {
-      const parentFolder = await getFolderForUser(
-        folderData.parentFolderId,
-        user.id,
-      );
+      const parentFolder = await getFolderForUser(folderData.parentFolderId, user.id);
 
       if (!parentFolder) {
         return c.json(
@@ -193,10 +188,7 @@ folderRouter.patch(
 
       if (await isDescendant(id, parentFolderId, user.id)) {
         return c.json(
-          errorResponse(
-            "FOLDER_CYCLE",
-            "Cannot move a folder into its own descendant or itself",
-          ),
+          errorResponse("FOLDER_CYCLE", "Cannot move a folder into its own descendant or itself"),
           HttpStatusCodes.UNPROCESSABLE_ENTITY,
         );
       }
@@ -261,8 +253,7 @@ folderRouter.put(
         );
       }
 
-      const parentFolderId =
-        folderData.parentFolderId ?? foundFolder.parentFolderId;
+      const parentFolderId = folderData.parentFolderId ?? foundFolder.parentFolderId;
       if (parentFolderId !== foundFolder.parentFolderId) {
         const parentFolder = await getFolderForUser(parentFolderId, user.id);
         if (!parentFolder) {
@@ -273,10 +264,7 @@ folderRouter.put(
         }
         if (await isDescendant(id, parentFolderId, user.id)) {
           return c.json(
-            errorResponse(
-              "FOLDER_CYCLE",
-              "Cannot move a folder into its own descendant or itself",
-            ),
+            errorResponse("FOLDER_CYCLE", "Cannot move a folder into its own descendant or itself"),
             HttpStatusCodes.UNPROCESSABLE_ENTITY,
           );
         }
@@ -305,10 +293,7 @@ folderRouter.put(
 
       const updatedFolder = await db.transaction(async (tx) => {
         let name = folderData.name ?? foundFolder.name;
-        if (
-          parentFolderId !== foundFolder.parentFolderId ||
-          name !== foundFolder.name
-        ) {
+        if (parentFolderId !== foundFolder.parentFolderId || name !== foundFolder.name) {
           name = await generateUniqueFolderName(name, user.id, parentFolderId);
         }
 
@@ -351,10 +336,7 @@ folderRouter.delete(
       const foundFolder = await getFolderForUser(id, user.id);
 
       if (!foundFolder) {
-        return c.json(
-          errorResponse("NOT_FOUND", "Folder not found"),
-          HttpStatusCodes.NOT_FOUND,
-        );
+        return c.json(errorResponse("NOT_FOUND", "Folder not found"), HttpStatusCodes.NOT_FOUND);
       }
 
       if (foundFolder.isRoot) {
@@ -397,10 +379,7 @@ folderRouter.get(
       const children = await getFolderChildrenQuery(id, user.id);
 
       if (!children) {
-        return c.json(
-          errorResponse("NOT_FOUND", "Folder not found"),
-          HttpStatusCodes.NOT_FOUND,
-        );
+        return c.json(errorResponse("NOT_FOUND", "Folder not found"), HttpStatusCodes.NOT_FOUND);
       }
 
       return c.json(
@@ -410,10 +389,7 @@ folderRouter.get(
     } catch (error) {
       console.error("Error retrieving folder children:", error);
       return c.json(
-        errorResponse(
-          "INTERNAL_SERVER_ERROR",
-          "Failed to retrieve folder children",
-        ),
+        errorResponse("INTERNAL_SERVER_ERROR", "Failed to retrieve folder children"),
         HttpStatusCodes.INTERNAL_SERVER_ERROR,
       );
     }
@@ -435,15 +411,12 @@ folderRouter.post("/root", createRootFolderDoc, async (c) => {
     }
 
     // Check if root folder was just created or already existed
-    const justCreated =
-      Date.now() - new Date(rootFolder.createdAt).getTime() < 5000;
+    const justCreated = Date.now() - new Date(rootFolder.createdAt).getTime() < 5000;
 
     return c.json(
       successResponse(
         rootFolder,
-        justCreated
-          ? "Root folder created successfully"
-          : "Root folder already exists",
+        justCreated ? "Root folder created successfully" : "Root folder already exists",
       ),
       justCreated ? HttpStatusCodes.CREATED : HttpStatusCodes.OK,
     );

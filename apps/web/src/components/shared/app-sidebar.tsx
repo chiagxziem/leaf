@@ -1,4 +1,5 @@
-import type { User } from "@repo/db/schemas/user.schema";
+import type { Theme } from "@/lib/types";
+import type { User } from "@repo/db/schemas/auth.schema";
 import type { FolderWithItems } from "@repo/db/validators/folder.validator";
 import { useQuery } from "@tanstack/react-query";
 import { getRouteApi, useNavigate } from "@tanstack/react-router";
@@ -24,7 +25,6 @@ import { useNoteMutations } from "@/hooks/use-note-mutations";
 import { useTreeDnD } from "@/hooks/use-tree-dnd";
 import { authClient } from "@/lib/auth-client";
 import { queryKeys } from "@/lib/query";
-import type { Theme } from "@/lib/types";
 import {
   countFolderStats,
   findLatestNoteFolderPath,
@@ -32,6 +32,7 @@ import {
   maskEmail,
 } from "@/lib/utils";
 import { $getFolder, folderQueryOptions } from "@/server/folder";
+
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import {
   DropdownMenu,
@@ -64,6 +65,20 @@ import { VirtualizedTree } from "./virtualized-tree";
 
 const SIDEBAR_BTN_SIZE: "sm" | "default" | "lg" = "default";
 
+const isDescendant = (node: FolderWithItems, targetId: string): boolean => {
+  if (node.id === targetId) return true;
+  return node.folders.some((f) => isDescendant(f, targetId));
+};
+
+const findFolder = (node: FolderWithItems, fId: string): FolderWithItems | null => {
+  if (node.id === fId) return node;
+  for (const f of node.folders) {
+    const found = findFolder(f, fId);
+    if (found) return found;
+  }
+  return null;
+};
+
 export const AppSidebar = ({ user }: { user: User }) => {
   const mainRoute = getRouteApi("/_main");
   const { queryClient } = mainRoute.useRouteContext();
@@ -71,9 +86,7 @@ export const AppSidebar = ({ user }: { user: User }) => {
   const navigate = useNavigate();
 
   const [activeParentId, setActiveParentId] = useState<string | null>(null);
-  const [activeNoteParentId, setActiveNoteParentId] = useState<string | null>(
-    null,
-  );
+  const [activeNoteParentId, setActiveNoteParentId] = useState<string | null>(null);
 
   const { isMobile } = useSidebar();
   const { setTheme, theme } = useTheme();
@@ -87,17 +100,12 @@ export const AppSidebar = ({ user }: { user: User }) => {
 
   // Initial open folder ids (depends on the most recently updated note)
   const initialOpenFolderIds = useMemo(
-    () =>
-      rootFolder
-        ? new Set(findLatestNoteFolderPath(rootFolder))
-        : new Set<string>(),
+    () => (rootFolder ? new Set(findLatestNoteFolderPath(rootFolder)) : new Set<string>()),
     [rootFolder],
   );
 
   // Controlled folder open state
-  const [openFolderIds, setOpenFolderIds] = useState<Set<string>>(
-    () => initialOpenFolderIds,
-  );
+  const [openFolderIds, setOpenFolderIds] = useState<Set<string>>(() => initialOpenFolderIds);
 
   // useEffect to update openFolderIds when rootFolder changes
   useEffect(() => {
@@ -165,11 +173,12 @@ export const AppSidebar = ({ user }: { user: User }) => {
 
   const signOutUser = async () => {
     toast.promise(
-      authClient.signOut().then(() => {
-        queryClient.invalidateQueries({
+      authClient.signOut().then(async () => {
+        await queryClient.invalidateQueries({
           queryKey: queryKeys.user(),
         });
-        navigate({ to: "/auth/sign-in" });
+        await navigate({ to: "/auth/sign-in" });
+        return undefined;
       }),
       {
         loading: "Signing out...",
@@ -221,27 +230,7 @@ export const AppSidebar = ({ user }: { user: User }) => {
     } else if (type === "folder") {
       if (id === targetFolderId) return;
 
-      const isDescendant = (
-        node: FolderWithItems,
-        targetId: string,
-      ): boolean => {
-        if (node.id === targetId) return true;
-        return node.folders.some((f) => isDescendant(f, targetId));
-      };
-
       if (rootFolder) {
-        const findFolder = (
-          node: FolderWithItems,
-          fId: string,
-        ): FolderWithItems | null => {
-          if (node.id === fId) return node;
-          for (const f of node.folders) {
-            const found = findFolder(f, fId);
-            if (found) return found;
-          }
-          return null;
-        };
-
         const draggedFolder = findFolder(rootFolder, id);
         if (draggedFolder && isDescendant(draggedFolder, targetFolderId)) {
           toast.error("Cannot move a folder into itself or its descendants");
@@ -260,12 +249,8 @@ export const AppSidebar = ({ user }: { user: User }) => {
       <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>
-            <SidebarMenuButton
-              asChild
-              className="h-auto rounded-2xl"
-              size={"lg"}
-            >
-              <div className="flex items-center gap-3 font-medium text-lg">
+            <SidebarMenuButton asChild className="h-auto rounded-2xl" size={"lg"}>
+              <div className="flex items-center gap-3 text-lg font-medium">
                 <div className="size-10">
                   <Image
                     alt="App Logo"
@@ -276,8 +261,8 @@ export const AppSidebar = ({ user }: { user: User }) => {
                   />
                 </div>
                 <div>
-                  <h3 className="font-roboto font-semibold text-xl">Leaf</h3>
-                  <p className="text-muted-foreground text-xs">
+                  <h3 className="font-roboto text-xl font-semibold">Leaf</h3>
+                  <p className="text-xs text-muted-foreground">
                     {folderStats
                       ? `${folderStats.folders} ${folderStats.folders === 1 ? "folder" : "folders"}. ${folderStats.notes} ${folderStats.notes === 1 ? "note" : "notes"}.`
                       : "0 folders. 0 notes."}
@@ -296,10 +281,7 @@ export const AppSidebar = ({ user }: { user: User }) => {
             <SidebarMenu>
               {actions.map((action) => (
                 <SidebarMenuItem key={action.title}>
-                  <SidebarMenuButton
-                    onClick={action.onClick}
-                    size={SIDEBAR_BTN_SIZE}
-                  >
+                  <SidebarMenuButton onClick={action.onClick} size={SIDEBAR_BTN_SIZE}>
                     <action.icon />
                     <span>{action.title}</span>
                   </SidebarMenuButton>
@@ -360,17 +342,14 @@ export const AppSidebar = ({ user }: { user: User }) => {
                   size="lg"
                 >
                   <Avatar className="size-10 rounded-lg">
-                    <AvatarImage
-                      alt={user.name}
-                      src={user.image || undefined}
-                    />
+                    <AvatarImage alt={user.name} src={user.image || undefined} />
                     <AvatarFallback className="rounded-lg">
                       {initialsFromName(user.name)}
                     </AvatarFallback>
                   </Avatar>
                   <div className="grid flex-1 text-left text-sm leading-tight">
                     <span className="truncate font-semibold">{user.name}</span>
-                    <span className="truncate text-muted-foreground text-xs">
+                    <span className="truncate text-xs text-muted-foreground">
                       {maskEmail(user.email)}
                     </span>
                   </div>
@@ -386,19 +365,14 @@ export const AppSidebar = ({ user }: { user: User }) => {
                 <DropdownMenuLabel className="p-0 font-normal">
                   <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
                     <Avatar className="size-10 rounded-lg">
-                      <AvatarImage
-                        alt={user.name}
-                        src={user.image || undefined}
-                      />
+                      <AvatarImage alt={user.name} src={user.image || undefined} />
                       <AvatarFallback className="rounded-lg">
                         {initialsFromName(user.name)}
                       </AvatarFallback>
                     </Avatar>
                     <div className="grid flex-1 text-left text-sm leading-tight">
-                      <span className="truncate font-semibold">
-                        {user.name}
-                      </span>
-                      <span className="truncate text-muted-foreground text-xs">
+                      <span className="truncate font-semibold">{user.name}</span>
+                      <span className="truncate text-xs text-muted-foreground">
                         {maskEmail(user.email)}
                       </span>
                     </div>
@@ -422,9 +396,7 @@ export const AppSidebar = ({ user }: { user: User }) => {
                           onSelect={() => setTheme(uiTheme.value as Theme)}
                         >
                           <uiTheme.icon />
-                          <span className="max-[480px]:hidden">
-                            {uiTheme.label}
-                          </span>
+                          <span className="max-[480px]:hidden">{uiTheme.label}</span>
                         </DropdownMenuCheckboxItem>
                       ))}
                     </DropdownMenuSubContent>

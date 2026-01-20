@@ -1,12 +1,12 @@
 import { createSelectSchema, createUpdateSchema } from "drizzle-zod";
-import z from "zod";
+import { z } from "zod";
 
-import { user } from "../schemas/user.schema";
+import { user } from "../schemas/auth.schema";
 
 export const UserSelectSchema = createSelectSchema(user).extend({
   image: z.string().nullable().optional(),
-  createdAt: z.iso.datetime(),
-  updatedAt: z.iso.datetime(),
+  createdAt: z.number().transform((n) => new Date(n)),
+  updatedAt: z.number().transform((n) => new Date(n)),
 });
 
 export const UserUpdateSchema = createUpdateSchema(user)

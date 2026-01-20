@@ -1,12 +1,15 @@
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
-import z from "zod";
+import { z } from "zod";
 
 import { note } from "../schemas/note.schema";
 
 export const EncryptedNoteSelectSchema = createSelectSchema(note).extend({
-  createdAt: z.iso.datetime(),
-  updatedAt: z.iso.datetime(),
-  deletedAt: z.iso.datetime().nullable(),
+  createdAt: z.number().transform((n) => new Date(n)),
+  updatedAt: z.number().transform((n) => new Date(n)),
+  deletedAt: z
+    .number()
+    .transform((n) => new Date(n))
+    .nullable(),
 });
 
 export const NoteSelectSchema = EncryptedNoteSelectSchema.omit({

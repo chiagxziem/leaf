@@ -20,7 +20,7 @@ function SignInPage() {
       await authClient.signIn.social(
         {
           provider: "google",
-          callbackURL: `${env.VITE_BASE_URL}`,
+          callbackURL: env.VITE_BASE_URL,
         },
         {
           onRequest() {
@@ -58,18 +58,12 @@ function SignInPage() {
 
       <div className="flex flex-col gap-4">
         <div className="flex flex-col gap-2">
-          <h1 className="font-bold font-roboto text-3xl">Sign In</h1>
+          <h1 className="font-roboto text-3xl font-bold">Sign In</h1>
         </div>
 
         <div className="flex flex-col gap-4">
-          <Button
-            disabled={buttonState === "loading"}
-            onClick={handleGoogleSignIn}
-            type="button"
-          >
-            {buttonState === "loading"
-              ? "Signing in..."
-              : "Sign in with Google"}
+          <Button disabled={buttonState === "loading"} onClick={handleGoogleSignIn} type="button">
+            {buttonState === "loading" ? "Signing in..." : "Sign in with Google"}
           </Button>
         </div>
       </div>

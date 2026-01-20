@@ -7,20 +7,12 @@ on:
   workflow_call:
 
 jobs:
-  biome:
+  oxc:
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
     steps:
-      - name: Checkout
-        uses: actions/checkout@v5
-        with:
-          persist-credentials: false
+      - uses: actions/checkout@v5
+      - uses: oven-sh/setup-bun@v2
 
-      - name: Setup Biome
-        uses: biomejs/setup-biome@v2
-        with:
-          version: 2.3.7
-
-      - name: run Biome
-        run: biome ci .
+      - run: bun install --frozen-lockfile
+      - run: bun lint --deny-warnings
+      - run: bun fmt:check

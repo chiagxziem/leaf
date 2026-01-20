@@ -32,7 +32,7 @@ export function useEnsureRootFolder() {
         await ensureRootFolderFn();
 
         // Invalidate the folder query to refetch with the new root
-        queryClient.invalidateQueries({
+        await queryClient.invalidateQueries({
           queryKey: queryKeys.folder("root"),
         });
       } catch (error) {
@@ -40,7 +40,7 @@ export function useEnsureRootFolder() {
       }
     };
 
-    ensureRoot();
+    void ensureRoot();
   }, [isLoading, rootFolder, ensureRootFolderFn, queryClient]);
 
   return { rootFolder, isLoading };

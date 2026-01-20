@@ -190,7 +190,7 @@ input[type="number"] {
   --chart-4: oklch(0.627 0.265 303.9);
   --chart-5: oklch(0.645 0.246 16.439);
   /* Might change the sidebar back to 0.205 */
-  --sidebar: oklch(0.185 0 0); 
+  --sidebar: oklch(0.185 0 0);
   --sidebar-foreground: oklch(0.985 0 0);
   --sidebar-primary: oklch(0.488 0.243 264.376);
   --sidebar-primary-foreground: oklch(0.985 0 0);
@@ -212,9 +212,9 @@ input[type="number"] {
 @layer components {
   /* TipTap content styling */
   .tiptap {
-    @apply w-full h-full;
+    @apply h-full w-full;
   }
-  
+
   /* Spacing between direct block nodes */
   .tiptap > * {
     @apply my-3;
@@ -225,32 +225,32 @@ input[type="number"] {
   .tiptap > :last-child {
     @apply mb-0;
   }
-  
+
   /* Headings */
   .tiptap h1 {
-    @apply font-semibold text-2xl md:text-3xl xl:text-4xl leading-tight;
+    @apply text-2xl leading-tight font-semibold md:text-3xl xl:text-4xl;
   }
   .tiptap h2 {
-    @apply font-semibold text-xl md:text-2xl xl:text-3xl leading-tight mt-6 mb-2;
+    @apply mt-6 mb-2 text-xl leading-tight font-semibold md:text-2xl xl:text-3xl;
   }
   .tiptap h3 {
-    @apply font-semibold text-lg md:text-xl xl:text-2xl leading-snug mt-5 mb-2;
+    @apply mt-5 mb-2 text-lg leading-snug font-semibold md:text-xl xl:text-2xl;
   }
   .tiptap h4 {
-    @apply font-semibold text-base md:text-lg xl:text-xl leading-snug mt-4 mb-2;
+    @apply mt-4 mb-2 text-base leading-snug font-semibold md:text-lg xl:text-xl;
   }
   .tiptap h5 {
-    @apply font-medium text-base md:text-lg xl:text-xl leading-snug mt-3 mb-1.5;
+    @apply mt-3 mb-1.5 text-base leading-snug font-medium md:text-lg xl:text-xl;
   }
   .tiptap h6 {
-    @apply font-medium text-sm md:text-base xl:text-lg uppercase tracking-wide text-muted-foreground mt-3 mb-1.5;
+    @apply mt-3 mb-1.5 text-sm font-medium tracking-wide text-muted-foreground uppercase md:text-base xl:text-lg;
   }
-  
+
   /* Paragraphs */
   .tiptap p {
     @apply leading-relaxed;
   }
-  
+
   /* Emphasis */
   .tiptap strong {
     @apply font-semibold;
@@ -258,18 +258,18 @@ input[type="number"] {
   .tiptap em {
     @apply italic;
   }
-  
+
   /* Links */
   .tiptap a {
-    @apply underline text-blue-600 dark:text-blue-400 hover:opacity-80;
+    @apply text-blue-600 underline hover:opacity-80 dark:text-blue-400;
   }
-  
+
   /* Lists */
   .tiptap ul {
-    @apply list-disc pl-6 my-3;
+    @apply my-3 list-disc pl-6;
   }
   .tiptap ol {
-    @apply list-decimal pl-6 my-3;
+    @apply my-3 list-decimal pl-6;
   }
   .tiptap li > p {
     @apply my-1;
@@ -280,25 +280,25 @@ input[type="number"] {
 
   /* Task Lists */
   .tiptap ul[data-type="taskList"] {
-    @apply list-none p-0 m-0;
+    @apply m-0 list-none p-0;
   }
   .tiptap ul[data-type="taskList"] li {
     @apply flex items-start;
   }
   .tiptap ul[data-type="taskList"] li > label {
-    @apply flex-none mr-2 select-none;
+    @apply mr-2 flex-none select-none;
   }
   .tiptap ul[data-type="taskList"] li > div {
-    @apply flex-1 mb-0.5 pb-px;
+    @apply mb-0.5 flex-1 pb-px;
   }
   .tiptap ul[data-type="taskList"] li input[type="checkbox"] {
-    @apply relative appearance-none mt-0.5 cursor-pointer size-4 rounded border border-primary/20 bg-input/10 dark:border-primary/10 dark:bg-input/30  focus-visible:border-ring focus-visible:ring-ring/50 outline-none focus-visible:ring-[3px] xl:mt-1;
+    @apply relative mt-0.5 size-4 cursor-pointer appearance-none rounded border border-primary/20 bg-input/10 outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 xl:mt-1 dark:border-primary/10 dark:bg-input/30;
   }
   .tiptap ul[data-type="taskList"] li input[type="checkbox"]:checked {
-    @apply bg-lime-500 border border-lime-500;
+    @apply border border-lime-500 bg-lime-500;
   }
   .tiptap ul[data-type="taskList"] li input[type="checkbox"]:checked::after {
-    @apply content-[''] absolute top-[45%] left-1/2 w-[5px] h-[9px] border-solid border-black border-[0_2px_2px_0] -translate-x-1/2 -translate-y-1/2 rotate-45 transform;
+    @apply absolute top-[45%] left-1/2 h-[9px] w-[5px] -translate-x-1/2 -translate-y-1/2 rotate-45 transform border-[0_2px_2px_0] border-solid border-black content-[''];
   }
   .tiptap ul[data-type="taskList"] li[data-checked="true"] > div > p {
     @apply text-muted-foreground line-through;
@@ -306,23 +306,23 @@ input[type="number"] {
   .tiptap ul[data-type="taskList"] ul[data-type="taskList"] {
     @apply m-0 mt-1;
   }
-  
+
   /* Blockquotes */
   .tiptap blockquote {
-    @apply border-l-[3px] border-lime-500 pl-4 py-1 text-secondary-foreground my-5;
+    @apply my-5 border-l-[3px] border-lime-500 py-1 pl-4 text-secondary-foreground;
   }
-  
+
   /* Horizontal rule */
   .tiptap hr {
     @apply my-6 border-t;
   }
-  
+
   /* Inline code and code blocks */
   .tiptap code {
     @apply rounded bg-muted/50 px-1.5 py-0.5 font-mono text-sm;
   }
   .tiptap pre {
-    @apply my-4 overflow-x-auto rounded-md bg-muted/50 shadow-xs p-3 border border-border;
+    @apply my-4 overflow-x-auto rounded-md border border-border bg-muted/50 p-3 shadow-xs;
   }
   .tiptap pre code {
     @apply bg-transparent p-0 text-sm;
@@ -333,4 +333,3 @@ input[type="number"] {
     padding-bottom: 40svh;
   }
 }
-

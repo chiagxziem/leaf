@@ -1,6 +1,6 @@
 import axios, { type AxiosError } from "axios";
 
-import env from "./env";
+import { env } from "./env";
 
 export const axiosClient = axios.create({
   baseURL: `${env.API_URL}/api`,

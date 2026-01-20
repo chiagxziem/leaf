@@ -1,6 +1,5 @@
-import { AxiosError } from "axios";
-
 import type { ApiErrorResponse } from "./types";
+import { AxiosError } from "axios";
 
 type ErrorHandlerOptions = {
   defaultMessage?: string;
@@ -18,8 +17,7 @@ export const apiErrorHandler = (
   error: unknown,
   options: ErrorHandlerOptions = {},
 ): HandlerReturnType => {
-  const { defaultMessage = "Something went wrong.", errorMapping = {} } =
-    options;
+  const { defaultMessage = "Something went wrong.", errorMapping = {} } = options;
 
   // Check if the error is an instance of AxiosError
   if (error instanceof AxiosError) {

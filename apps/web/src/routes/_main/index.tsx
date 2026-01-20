@@ -20,8 +20,7 @@ import { $getFolder, folderQueryOptions } from "@/server/folder";
 
 export const Route = createFileRoute("/_main/")({
   beforeLoad: async ({ context }) => {
-    const rootFolder =
-      await context.queryClient.ensureQueryData(folderQueryOptions);
+    const rootFolder = await context.queryClient.ensureQueryData(folderQueryOptions);
 
     if (rootFolder) {
       const mostRecentNote = getMostRecentlyUpdatedNote(rootFolder);
@@ -95,8 +94,7 @@ function HomePage() {
                       </EmptyMedia>
                       <EmptyTitle>No Notes Yet</EmptyTitle>
                       <EmptyDescription>
-                        You do not have any notes yet. Create one to get
-                        started.
+                        You do not have any notes yet. Create one to get started.
                       </EmptyDescription>
                     </EmptyHeader>
                     <EmptyContent>
