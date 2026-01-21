@@ -49,6 +49,7 @@ export const auth = betterAuth({
     },
   },
 
+  baseURL: env.API_URL,
   trustedOrigins: [env.API_URL, env.WEB_URL],
 
   session: {
