@@ -11,7 +11,8 @@
         "dist/**",
         ".output/**",
         ".tanstack/**",
-        ".vercel/**"
+        ".vercel/**",
+        "*-exe"
       ]
     },
     "check-types": {

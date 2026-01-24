@@ -47,9 +47,9 @@ const MainNotesNoteIdRoute = MainNotesNoteIdRouteImport.update({
 } as any)
 
 export interface FileRoutesByFullPath {
+  '/': typeof MainIndexRoute
   '/auth': typeof AuthRouteRouteWithChildren
   '/auth/sign-in': typeof AuthSignInRoute
-  '/': typeof MainIndexRoute
   '/auth/': typeof AuthIndexRoute
   '/notes/$noteId': typeof MainNotesNoteIdRoute
 }
@@ -70,7 +70,7 @@ export interface FileRoutesById {
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/auth' | '/auth/sign-in' | '/' | '/auth/' | '/notes/$noteId'
+  fullPaths: '/' | '/auth' | '/auth/sign-in' | '/auth/' | '/notes/$noteId'
   fileRoutesByTo: FileRoutesByTo
   to: '/auth/sign-in' | '/' | '/auth' | '/notes/$noteId'
   id:
@@ -100,7 +100,7 @@ declare module '@tanstack/react-router' {
     '/_main': {
       id: '/_main'
       path: ''
-      fullPath: ''
+      fullPath: '/'
       preLoaderRoute: typeof MainRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
