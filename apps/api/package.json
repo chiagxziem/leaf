@@ -7,15 +7,15 @@
     "start": "./api-exe"
   },
   "dependencies": {
-    "@hono/standard-validator": "^0.2.1",
-    "@scalar/hono-api-reference": "^0.9.32",
+    "@hono/standard-validator": "^0.2.2",
+    "@scalar/hono-api-reference": "^0.9.36",
     "@t3-oss/env-core": "^0.13.10",
-    "better-auth": "^1.4.10",
-    "hono": "^4.11.1",
+    "better-auth": "^1.4.17",
+    "hono": "^4.11.5",
     "hono-openapi": "^1.1.2",
     "hono-rate-limiter": "^0.5.3",
     "pako": "^2.1.0",
-    "zod": "^4.3.5"
+    "zod": "^4.3.6"
   },
   "devDependencies": {
     "@repo/db": "workspace:*",
