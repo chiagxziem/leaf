@@ -26,9 +26,6 @@ RUN bun install
 # Copy the rest of the files (as they change more often)
 COPY --from=prepare /app/out/full/ .
 
-ARG VITE_AUTH_SERVER_URL
-ARG VITE_BASE_URL
-
 # Build the app
 RUN bunx turbo run build
 
