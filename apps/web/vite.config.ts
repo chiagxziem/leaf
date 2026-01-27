@@ -7,7 +7,7 @@ import tsConfigPaths from "vite-tsconfig-paths";
 
 export default defineConfig({
   server: {
-    port: Number(process.env.PORT),
+    port: 3000,
   },
   plugins: [tailwindcss(), tsConfigPaths(), tanstackStart(), nitro({ preset: "bun" }), viteReact()],
 });
