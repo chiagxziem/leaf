@@ -240,7 +240,7 @@ const NoteView = ({
       }),
     ],
     content: note.content,
-    immediatelyRender: true,
+    immediatelyRender: false,
     autofocus: "end",
     onUpdate: ({ editor }) => {
       // Avoid marking the editor as dirty if read mode is activated or if the content equals the server
