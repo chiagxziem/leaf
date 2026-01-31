@@ -78,6 +78,7 @@ import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Spinner } from "@/components/ui/spinner";
 import { cancelToastEl } from "@/components/ui/toaster";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { useIsIOS } from "@/hooks/use-is-ios";
 import { apiErrorHandler } from "@/lib/handle-api-error";
 import { queryKeys } from "@/lib/query";
 import { cn, getMostRecentlyUpdatedNote } from "@/lib/utils";
@@ -139,6 +140,7 @@ function NotePage() {
   const [titleState, setTitleState] = useState<SyncState>("idle");
   const [contentState, setContentState] = useState<SyncState>("idle");
   const [isEditing, setIsEditing] = useState(true);
+  const isIOS = useIsIOS();
 
   const titleRef = useRef<HTMLTextAreaElement>(null);
 
@@ -190,6 +192,7 @@ function NotePage() {
           setContentState={setContentState}
           setTitleState={setTitleState}
           titleRef={titleRef}
+          isIOS={isIOS}
         />
       ) : null}
     </main>
@@ -204,6 +207,7 @@ const NoteView = ({
   noteState,
   onToggleEditing,
   titleRef,
+  isIOS,
 }: {
   note: DecryptedNote;
   setTitleState: (s: SyncState) => void;
@@ -212,6 +216,7 @@ const NoteView = ({
   noteState: SyncState;
   onToggleEditing: () => void;
   titleRef: RefObject<HTMLTextAreaElement | null>;
+  isIOS: boolean | null;
 }) => {
   const { queryClient } = Route.useRouteContext();
   const updateNoteContent = useServerFn($updateNoteContent);
@@ -226,7 +231,9 @@ const NoteView = ({
 
   const editor = useEditor({
     extensions: [
-      StarterKit,
+      StarterKit.configure({
+        codeBlock: false,
+      }),
       Underline,
       TaskList,
       Superscript,
@@ -435,11 +442,10 @@ const NoteView = ({
         state={noteState}
         titleRef={titleRef}
       />
-      <div
-        className="flex flex-1 overflow-auto pt-4"
-        // Add space so caret/content aren’t hidden behind the keyboard on iOS
-        style={{ paddingBottom: "var(--kb, 0px)" }}
-      >
+      {isIOS === true && (
+        <NoteToolbar editor={editor} isEditing={isEditing} className="sticky top-10 border-y" />
+      )}
+      <div className="flex flex-1 overflow-auto pt-4">
         <div className="container flex min-h-0 flex-1">
           <div className="flex min-h-0 w-full flex-1 flex-col">
             <TitleTextarea
@@ -462,7 +468,7 @@ const NoteView = ({
           </div>
         </div>
       </div>
-      <NotePageFooter editor={editor} isEditing={isEditing} />
+      {isIOS === false && <NoteToolbar editor={editor} isEditing={isEditing} />}
     </>
   );
 };
@@ -505,7 +511,15 @@ const NotePageHeader = ({
   );
 };
 
-const NotePageFooter = ({ isEditing, editor }: { isEditing: boolean; editor: Editor | null }) => {
+const NoteToolbar = ({
+  isEditing,
+  editor,
+  className,
+}: {
+  isEditing: boolean;
+  editor: Editor | null;
+  className?: string;
+}) => {
   const [, forceUpdate] = useState({});
   const [linkPopoverOpen, setLinkPopoverOpen] = useState(false);
   const [linkUrl, setLinkUrl] = useState("");
@@ -599,9 +613,10 @@ const NotePageFooter = ({ isEditing, editor }: { isEditing: boolean; editor: Edi
 
   return (
     <footer
-      className="hide-scrollbar sticky bottom-0 isolate z-10 flex h-10 w-full items-center gap-2 overflow-x-auto border-t border-muted/80 px-3 md:justify-center lg:px-6"
-      // Lift above the on-screen keyboard on iOS
-      style={{ transform: "translateY(calc(-1 * var(--kb, 0px)))" }}
+      className={cn(
+        "hide-scrollbar sticky bottom-0 isolate z-10 flex h-10 w-full items-center gap-2 overflow-x-auto border-t border-muted/80 bg-background px-3 md:justify-center lg:px-6",
+        className,
+      )}
     >
       <div className="flex items-center justify-center gap-1">
         <Tooltip>

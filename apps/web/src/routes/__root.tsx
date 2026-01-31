@@ -4,7 +4,6 @@ import { ThemeProvider } from "next-themes";
 import type { ReactNode } from "react";
 
 import { Toaster } from "@/components/ui/toaster";
-import { useIOSKeyboardResize } from "@/hooks/use-ios-keyboard-resize";
 import { fontsHref } from "@/lib/utils";
 import appCss from "@/styles/app.css?url";
 import fontsCss from "@/styles/fonts.css?url";
@@ -44,9 +43,6 @@ export const Route = createRootRouteWithContext<AppRouterContext>()({
 });
 
 function RootDocument({ children }: Readonly<{ children: ReactNode }>) {
-  // Install iOS keyboard workaround
-  useIOSKeyboardResize();
-
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
@@ -61,10 +57,7 @@ function RootDocument({ children }: Readonly<{ children: ReactNode }>) {
           enableSystem
         >
           {/* Give the app container a stable id we can resize on iOS */}
-          <div
-            className="relative isolate flex min-h-dvh flex-col bg-background text-sm leading-normal text-neutral-800 antialiased **:outline-offset-2 **:outline-transparent selection:bg-lime-500 selection:text-neutral-950 md:text-[15px] xl:text-base dark:text-neutral-200"
-            id="app-root"
-          >
+          <div className="relative isolate flex min-h-dvh flex-col bg-background text-sm leading-normal text-neutral-800 antialiased **:outline-offset-2 **:outline-transparent selection:bg-lime-500 selection:text-neutral-950 md:text-[15px] xl:text-base dark:text-neutral-200">
             {children}
           </div>
 
