@@ -474,9 +474,11 @@ noteRouter.put(
       };
 
       // Only return provided content (if any) – otherwise leave as empty string (editor can lazy load)
-      if (content && encryptedData.contentEncrypted) {
-        decryptedUpdatedNote.content = content;
-      }
+      // Performance: Do NOT return the content. The client already has it.
+      // This saves massive bandwidth on autosaves.
+      // if (content && encryptedData.contentEncrypted) {
+      //   decryptedUpdatedNote.content = content;
+      // }
 
       // Set ETag header for caching
       c.header("ETag", `"${updatedNote.updatedAt.getTime()}"`);

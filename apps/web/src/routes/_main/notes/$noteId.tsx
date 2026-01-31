@@ -12,6 +12,7 @@ import { type Editor, EditorContent, useEditor } from "@tiptap/react";
 import { StarterKit } from "@tiptap/starter-kit";
 import { useDebounce } from "@uidotdev/usehooks";
 import { common, createLowlight } from "lowlight";
+import { gzip } from "pako";
 import {
   type ComponentProps,
   type RefObject,
@@ -316,10 +317,41 @@ const NoteView = ({
 
   const { mutate: saveContent } = useMutation({
     mutationKey: ["update-note-content", note.id],
-    mutationFn: async (html: string) =>
-      updateNoteContent({
-        data: { noteId: note.id, title: getCurrentTitle(), content: html },
-      }),
+    mutationFn: async (html: string) => {
+      const contentSize = new TextEncoder().encode(html).length;
+      let finalContent = html;
+      let isCompressed = false;
+
+      // Compress if larger than 10KB (10 * 1024)
+      if (contentSize > 10240) {
+        try {
+          const compressed = gzip(html);
+          // Convert Uint8Array to base64
+          let binary = "";
+          const len = compressed.byteLength;
+          for (let i = 0; i < len; i++) {
+            binary += String.fromCharCode(compressed[i]);
+          }
+          finalContent = window.btoa(binary);
+          isCompressed = true;
+          console.log(
+            `Client-compressed ${contentSize} bytes -> ${finalContent.length} chars (${Math.round((1 - finalContent.length / contentSize) * 100)}% saved)`,
+          );
+        } catch (e) {
+          console.error("Client compression failed:", e);
+          // Fallback to sending uncompressed
+        }
+      }
+
+      return updateNoteContent({
+        data: {
+          noteId: note.id,
+          title: getCurrentTitle(),
+          content: finalContent,
+          isCompressed,
+        },
+      });
+    },
     onMutate: () => {
       const seq = ++contentSeqRef.current;
       setContentState("saving");

@@ -247,7 +247,9 @@ export const updateNoteDoc = describeRoute({
   responses: {
     [HttpStatusCodes.OK]: createSuccessResponse("Note updated", {
       details: "Note updated successfully",
-      dataSchema: NoteSelectSchema,
+      dataSchema: NoteSelectSchema.extend({
+        content: z.string().optional(),
+      }),
     }),
     [HttpStatusCodes.BAD_REQUEST]: createErrorResponse("Invalid request data", {
       invalidNoteUUID: {

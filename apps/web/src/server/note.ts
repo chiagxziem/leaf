@@ -175,6 +175,7 @@ export const $updateNoteContent = createServerFn({
       title: z.string().min(1),
       noteId: z.string().min(1),
       content: z.string(),
+      isCompressed: z.boolean().optional(),
     }),
   )
   .handler(async ({ context, data }) => {
@@ -187,27 +188,29 @@ export const $updateNoteContent = createServerFn({
     };
 
     // Compress content if it's large (> 10KB in bytes)
-    const contentSize = getByteSize(data.content);
-    if (data.content && contentSize > 10240) {
-      try {
-        // Compress using gzip
-        const compressed = gzip(data.content);
-
-        // Convert to base64 safely
-        const base64 = uint8ArrayToBase64(compressed);
-
-        payload.content = base64;
-        payload._compressed = true;
-
-        console.log(
-          `Compressed ${contentSize} bytes -> ${base64.length} base64 chars (${Math.round((1 - (base64.length * 0.75) / contentSize) * 100)}% reduction)`,
-        );
-      } catch (error) {
-        console.error("Compression failed, sending uncompressed:", error);
+    if (data.isCompressed) {
+      // Client already compressed it, pass through
+      payload.content = data.content;
+      payload._compressed = true;
+    } else {
+      // Server-side compression fallback
+      const contentSize = getByteSize(data.content);
+      if (data.content && contentSize > 10240) {
+        try {
+          const compressed = gzip(data.content);
+          const base64 = uint8ArrayToBase64(compressed);
+          payload.content = base64;
+          payload._compressed = true;
+          console.log(
+            `Server-compressed ${contentSize} bytes -> ${base64.length} base64 chars (${Math.round((1 - (base64.length * 0.75) / contentSize) * 100)}% reduction)`,
+          );
+        } catch (error) {
+          console.error("Compression failed, sending uncompressed:", error);
+          payload.content = data.content;
+        }
+      } else {
         payload.content = data.content;
       }
-    } else {
-      payload.content = data.content;
     }
 
     const res = await axiosClient.put<ApiSuccessResponse<Note>>(`/notes/${data.noteId}`, payload, {
