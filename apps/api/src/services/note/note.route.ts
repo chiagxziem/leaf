@@ -1,10 +1,12 @@
 import type { EncryptedNote } from "@/types";
 import { validator } from "hono-openapi";
+import { streamSSE } from "hono/streaming";
 import { ungzip } from "pako";
 import { z } from "zod";
 
 import { createRouter } from "@/app";
 import { decryptContent, encryptContent } from "@/lib/encryption";
+import { noteEvents } from "@/lib/events";
 import HttpStatusCodes from "@/lib/http-status-codes";
 import { errorResponse, successResponse } from "@/lib/utils";
 import { authed } from "@/middleware/authed";
@@ -58,6 +60,45 @@ const decompressContent = (data: any): string | undefined => {
 
   return data.content;
 };
+
+// Realtime SSE endpoint
+noteRouter.get("/sse", async (c) => {
+  const user = c.get("user");
+
+  return streamSSE(c, async (stream) => {
+    const listener = (data: { type: string; id: string; userId: string }) => {
+      if (data.userId === user.id) {
+        stream.writeSSE({
+          data: JSON.stringify({ type: data.type, id: data.id }),
+          event: "data-change",
+        });
+      }
+    };
+
+    noteEvents.on("data-change", listener);
+
+    stream.onAbort(() => {
+      noteEvents.off("data-change", listener);
+    });
+
+    // Heartbeat to keep connection alive
+    const sendHeartbeat = async () => {
+      try {
+        while (true) {
+          // oxlint-disable-next-line no-await-in-loop
+          await stream.sleep(30000);
+          // oxlint-disable-next-line no-await-in-loop
+          await stream.writeSSE({ data: "heartbeat", event: "ping" });
+        }
+      } catch {
+        // Stream most likely closed
+      }
+    };
+
+    // Start heartbeat in background
+    void sendHeartbeat();
+  });
+});
 
 // Get all notes
 noteRouter.get("/", getAllNotesDoc, async (c) => {
@@ -133,6 +174,10 @@ noteRouter.post(
       };
 
       const [newNote] = await db.insert(note).values(payload).returning();
+
+      // Emit realtime update event
+      console.log(`[SSE] Emitting note-created for note ${newNote.id}`);
+      noteEvents.emit("data-change", { type: "note", id: newNote.id, userId: user.id });
 
       return c.json(successResponse(newNote, "Note created successfully"), HttpStatusCodes.CREATED);
     } catch (error) {
@@ -256,6 +301,10 @@ noteRouter.get(
 
       const [copiedNote] = await db.insert(note).values(payload).returning();
 
+      // Emit realtime update event
+      console.log(`[SSE] Emitting note-copied for note ${copiedNote.id}`);
+      noteEvents.emit("data-change", { type: "note", id: copiedNote.id, userId: user.id });
+
       return c.json(
         successResponse(copiedNote, "Note copied successfully"),
         HttpStatusCodes.CREATED,
@@ -299,6 +348,10 @@ noteRouter.patch(
         .set({ isFavorite: favorite })
         .where(eq(note.id, id))
         .returning();
+
+      // Emit realtime update event
+      console.log(`[SSE] Emitting note-favorited for note ${id}`);
+      noteEvents.emit("data-change", { type: "note", id: id, userId: user.id });
 
       return c.json(
         successResponse(updatedNote, "Note favorite state updated successfully"),
@@ -357,6 +410,12 @@ noteRouter.patch(
         .set({ folderId, title: uniqueTitle })
         .where(eq(note.id, id))
         .returning();
+
+      // Emit realtime update event
+      console.log(`[SSE] Emitting note-moved for note ${id}`);
+      noteEvents.emit("data-change", { type: "note", id: id, userId: user.id });
+      // Also notify that folder content changed
+      noteEvents.emit("data-change", { type: "folder", id: folderId, userId: user.id });
 
       return c.json(successResponse(updatedNote, "Note moved successfully"), HttpStatusCodes.OK);
     } catch (error) {
@@ -473,15 +532,12 @@ noteRouter.put(
         updatedAt: updatedNote.updatedAt,
       };
 
-      // Only return provided content (if any) – otherwise leave as empty string (editor can lazy load)
-      // Performance: Do NOT return the content. The client already has it.
-      // This saves massive bandwidth on autosaves.
-      // if (content && encryptedData.contentEncrypted) {
-      //   decryptedUpdatedNote.content = content;
-      // }
-
       // Set ETag header for caching
       c.header("ETag", `"${updatedNote.updatedAt.getTime()}"`);
+
+      // Emit realtime update event
+      console.log(`[SSE] Emitting note-updated for note ${id}`);
+      noteEvents.emit("data-change", { type: "note", id: id, userId: user.id });
 
       return c.json(
         successResponse(decryptedUpdatedNote, "Note updated successfully"),
@@ -519,6 +575,10 @@ noteRouter.delete(
         .set({ deletedAt: new Date() })
         .where(eq(note.id, id))
         .returning();
+
+      // Emit realtime update event
+      console.log(`[SSE] Emitting note-deleted for note ${id}`);
+      noteEvents.emit("data-change", { type: "note", id: id, userId: user.id });
 
       return c.json(successResponse(deletedNote, "Note deleted successfully"), HttpStatusCodes.OK);
     } catch (error) {

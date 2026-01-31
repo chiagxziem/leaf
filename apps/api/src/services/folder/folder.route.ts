@@ -2,6 +2,7 @@ import { validator } from "hono-openapi";
 import { z } from "zod";
 
 import { createRouter } from "@/app";
+import { noteEvents } from "@/lib/events";
 import HttpStatusCodes from "@/lib/http-status-codes";
 import { errorResponse, successResponse } from "@/lib/utils";
 import { authed } from "@/middleware/authed";
@@ -123,6 +124,10 @@ folderRouter.post(
 
       const [newFolder] = await db.insert(folder).values(payload).returning();
 
+      // Emit realtime update event
+      console.log(`[SSE] Emitting folder-created for folder ${newFolder.id}`);
+      noteEvents.emit("data-change", { type: "folder", id: newFolder.id, userId: user.id });
+
       return c.json(
         successResponse(newFolder, "Folder created successfully"),
         HttpStatusCodes.CREATED,
@@ -211,6 +216,12 @@ folderRouter.patch(
         return updated;
       });
 
+      // Emit realtime update event
+      console.log(`[SSE] Emitting folder-moved for folder ${id}`);
+      noteEvents.emit("data-change", { type: "folder", id: id, userId: user.id });
+      // Also notify that target parent folder content changed
+      noteEvents.emit("data-change", { type: "folder", id: parentFolderId, userId: user.id });
+
       return c.json(
         successResponse(updatedFolder, "Folder moved successfully"),
         HttpStatusCodes.OK,
@@ -279,6 +290,10 @@ folderRouter.put(
             .where(eq(folder.id, id))
             .returning();
 
+          // Emit realtime update event
+          console.log(`[SSE] Emitting folder-updated (rename) for folder ${id}`);
+          noteEvents.emit("data-change", { type: "folder", id: id, userId: user.id });
+
           return c.json(
             successResponse(updatedFolder, "Folder updated successfully"),
             HttpStatusCodes.OK,
@@ -308,6 +323,10 @@ folderRouter.put(
           .returning();
         return updated;
       });
+
+      // Emit realtime update event
+      console.log(`[SSE] Emitting folder-updated (complex) for folder ${id}`);
+      noteEvents.emit("data-change", { type: "folder", id: id, userId: user.id });
 
       return c.json(
         successResponse(updatedFolder, "Folder updated successfully"),
@@ -351,6 +370,10 @@ folderRouter.delete(
 
       // Return the folder with deletedAt set
       const deletedFolder = { ...foundFolder, deletedAt: new Date() };
+
+      // Emit realtime update event
+      console.log(`[SSE] Emitting folder-deleted for folder ${id}`);
+      noteEvents.emit("data-change", { type: "folder", id: id, userId: user.id });
 
       return c.json(
         successResponse(deletedFolder, "Folder deleted successfully"),
@@ -412,6 +435,12 @@ folderRouter.post("/root", createRootFolderDoc, async (c) => {
 
     // Check if root folder was just created or already existed
     const justCreated = Date.now() - new Date(rootFolder.createdAt).getTime() < 5000;
+
+    // Emit if created
+    if (justCreated) {
+      console.log(`[SSE] Emitting root-folder-created`);
+      noteEvents.emit("data-change", { type: "folder", id: rootFolder.id, userId: user.id });
+    }
 
     return c.json(
       successResponse(

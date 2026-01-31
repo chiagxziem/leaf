@@ -2,6 +2,7 @@ import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
 
 import { AppSidebar } from "@/components/shared/app-sidebar";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
+import { useRealtimeSync } from "@/hooks/use-realtime-sync";
 import { folderQueryOptions } from "@/server/folder";
 import { userQueryOptions } from "@/server/user";
 
@@ -31,6 +32,7 @@ export const Route = createFileRoute("/_main")({
 
 function MainLayout() {
   const { user } = Route.useLoaderData();
+  useRealtimeSync();
 
   return (
     <SidebarProvider>
