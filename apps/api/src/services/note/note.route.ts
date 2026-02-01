@@ -39,7 +39,6 @@ const getByteSize = (str: string): number => {
 };
 
 // Helper for decompressing note content
-// biome-ignore lint/suspicious/noExplicitAny: needed
 const decompressContent = (data: any): string | undefined => {
   if (!data.content) return data.content;
 

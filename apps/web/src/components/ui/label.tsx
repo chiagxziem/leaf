@@ -1,5 +1,3 @@
-/** biome-ignore-all lint/a11y/noLabelWithoutControl: needed */
-
 import * as LabelPrimitive from "@radix-ui/react-label";
 import type { ComponentProps } from "react";
 

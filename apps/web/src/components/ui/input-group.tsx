@@ -1,6 +1,3 @@
-/** biome-ignore-all lint/a11y/noNoninteractiveElementInteractions: needed */
-/** biome-ignore-all lint/a11y/useSemanticElements: needed */
-
 import { cva, type VariantProps } from "class-variance-authority";
 import type * as React from "react";
 

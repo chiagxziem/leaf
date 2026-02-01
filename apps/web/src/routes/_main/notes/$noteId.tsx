@@ -290,7 +290,6 @@ const NoteView = ({
   });
 
   // This syncs down server content on navigation or external updates
-  // biome-ignore lint/correctness/useExhaustiveDependencies: syncing rule intentionally limited
   useEffect(() => {
     if (editor?.isFocused || contentDirty) return;
 

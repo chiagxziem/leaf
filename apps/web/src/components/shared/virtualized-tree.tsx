@@ -1,6 +1,3 @@
-/** biome-ignore-all lint/a11y/noNoninteractiveElementInteractions: required */
-/** biome-ignore-all lint/a11y/noStaticElementInteractions: required */
-
 import type { DraggedItem } from "@/hooks/use-tree-dnd";
 import type { Note } from "@repo/db/schemas/note.schema";
 import type { FolderWithItems } from "@repo/db/validators/folder.validator";
