@@ -2,8 +2,8 @@
 
 Backend API for the Leaf application.
 
-- Built with Hono.
-- Uses PostgreSQL for data storage.
+- Built with Bun & Hono.
+- Uses PostgreSQL as the database.
 - Deployed with Docker.
 - [OpenAPI Docs with Scalar](https://api.leaf.gozman.xyz/api/reference)
 
@@ -11,6 +11,6 @@ Backend API for the Leaf application.
 
 1. Copy `.env.example` to `.env` and configure environment variables.
 2. Run `bun install` to install dependencies.
-3. Run `turbo dev` from the project root to start the API.
+3. Run `turbo dev` from the project root or `bun run dev` from the `/api` directory to start the API.
 
-See the main project [`README.md`](https://github.com/gozmanthefirst/leaf) for more details.
+See the main project [`README.md`](https://github.com/chiagxziem/leaf) for more details.

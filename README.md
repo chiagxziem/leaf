@@ -1,10 +1,6 @@
 # Leaf
 
-This is a monorepo containing the different parts of an app for writing and organizing notes called Leaf.
-
-## Why?
-
-I got the inspo for this from Obsidian. I think Obsidian is pretty amazing. However, I am poor and therefore can't pay for sync at the moment, and I'd really like to be able to edit a note on my PC and still access it on my mobile devices. I also wanted a solution that gave me more control over my data and allowed me to customize the features to my specific needs. Since I'm not such a bad software developer myself, I decided to build something similar, even if its just the basic features.
+Leaf is a WYSIWYG note taking web app that allows you to create, update, and organize your notes.
 
 ## Features
 
@@ -20,11 +16,11 @@ I got the inspo for this from Obsidian. I think Obsidian is pretty amazing. Howe
 - **Database:** Postgres
 - **Deployment:** Docker
 
-Other tools used include Drizzle as the ORM layer for the database, Biome for linting and formatting, Husky for Git hooks, and Lintstaged for running linters on staged files.
+Other tools used include Drizzle as the ORM layer for the database, [Oxlint](https://oxc.rs/docs/guide/usage/linter) for linting & [Oxfmt](https://oxc.rs/docs/guide/usage/formatter) for formatting.
 
 ## Live Demo
 
-- [API Base URL](https://api.leaf.gozman.xyz/api)
+- [App URL](https://leaf.gozman.xyz)
 - [OpenAPI Docs with Scalar](https://api.leaf.gozman.xyz/api/reference)
 
 ## Prerequisites
@@ -40,19 +36,11 @@ Other tools used include Drizzle as the ORM layer for the database, Biome for li
    bun install
    ```
 
-2. **Set up Husky and Lintstaged:**
-
-   ```sh
-   bunx husky init
-   ```
-
-   After running the command, go into `.husky/pre-commit` and enter `bunx lint-staged`. It'll run any time a commit is being made.
-
-3. **Set up the database:**
+2. **Set up the database:**
    - Create a `.env` file in `packages/db` and enter the DB URL:
 
      ```env
-     DATABASE_URL=postgresql://user:secret@localhost:5433/leaf
+     DATABASE_URL=postgresql://user:secret@localhost:5432/leaf
      ```
 
    - The database can be created using `turbo db:up`. Make sure you have Docker set up on your machine. It can be taken down using `turbo db:down`, and deleted using `turbo db:delete`.
@@ -64,29 +52,27 @@ Other tools used include Drizzle as the ORM layer for the database, Biome for li
      turbo db:migrate
      ```
 
-4. **Set up the backend app:**
+3. **Set up the backend app:**
    - Copy `.env.example` to `.env` in the `apps/api` directory.
    - Update the values to set up the environment variables. The required variables include:
-     - `PORT`: The port the backend server will listen on (e.g., `8000`).
-     - `WEB_URL`: The URL of the frontend application (e.g., `http://localhost:3000`).
-     - `DATABASE_URL`: The same DB URL as the one set in the database package.
-     - `AUTH_COOKIE`: The name of the auth session cookie.
-     - `ENCRYPTION_KEY`: A secret key for encrypting notes. Generate a new secret using the command: `openssl rand -hex 32`.
-     - `BETTER_AUTH_SECRET`: A secret key for Better Auth. Generate a new secret using the command: `openssl rand -hex 32`.
-     - `RESEND_API_KEY`: Your Resend API key.
-     - `RESEND_DOMAIN`: Your Resend domain.
-     - `RESEND_API_KEY`: Your Resend API key.
-     - `RESEND_DOMAIN`: Your Resend domain.
-
-5. **Set up the frontend app:**
-   - Copy `.env.example` to `.env` in the `apps/web` directory.
-   - Update the values to set up the environment variables. The required variables include:
-     - `API_URL`: The URL of the backend application (e.g., `http://localhost:8000/api`).
-     - `DATABASE_URL`: The same DB URL as the one set in the database package.
-     - `AUTH_COOKIE`: The name of the auth session cookie.
+     - `API_URL`: The URL of the backend app (e.g., `http://localhost:8000`).
+     - `WEB_URL`: The URL of the frontend app (e.g., `http://localhost:3000`).
+     - `DOMAIN`: The domain of the app (e.g., `localhost:8000`).
+     - `DATABASE_URL`: The same DB URL as the one set in the db package.
      - `BETTER_AUTH_SECRET`: A secret key for Better Auth. Generate a new secret using the command: `openssl rand -hex 32`.
      - `GOOGLE_CLIENT_ID`: Your Google Client ID for Google Auth.
      - `GOOGLE_CLIENT_SECRET`: Your Google Client Secret for Google Auth.
+     - `ENCRYPTION_KEY`: A secret key for encrypting notes. Generate a new secret using the command: `openssl rand -hex 32`.
+     - `CORS_ORIGINS`: Comma-separated list of allowed CORS origins (e.g., `http://localhost:3120,https://app.example.com`).
+
+4. **Set up the frontend app:**
+   - Copy `.env.example` to `.env` in the `apps/web` directory.
+   - Update the values to set up the environment variables. The required variables include:
+     - `WEB_URL`: The URL of the frontend app (e.g., `http://localhost:3000`).
+     - `API_URL`: The URL of the backend app (e.g., `http://localhost:8000`).
+     - `DATABASE_URL`: The same DB URL as the one set in the database package.
+     - `VITE_AUTH_SERVER_URL`: The URL of the backend app (e.g., `http://localhost:8000`).
+     - `VITE_BASE_URL`: The URL of the frontend app (e.g., `http://localhost:3000`).
 
 ## Running Locally
 
@@ -109,7 +95,7 @@ Contributions are welcome! Please follow these steps:
 
 ## Roadmap
 
-These are features that I might add later on. This is not a promise. Don't bank on me adding them
+These are features that I might add later on. This is not a promise.
 
 - [ ] Ability to share notes with other users.
 - [ ] Make a PWA.

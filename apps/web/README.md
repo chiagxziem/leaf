@@ -1,6 +1,6 @@
 # Leaf Web App
 
-A WYSIWYG web app for the Leaf application.
+Web app for the Leaf application.
 
 - Built with TanStack Start.
 - Uses Tiptap for the WYSIWYG functionality.
@@ -10,6 +10,6 @@ A WYSIWYG web app for the Leaf application.
 
 1. Copy `.env.example` to `.env` and configure environment variables.
 2. Run `bun install` to install dependencies.
-3. Run `turbo dev` from the project root to start the web app.
+3. Run `turbo dev` from the project root or `bun run dev` from the `/web` directory to start the web app.
 
-See the main project [`README.md`](https://github.com/gozmanthefirst/leaf) for more details
+See the main project [`README.md`](https://github.com/chiagxziem/leaf) for more details
