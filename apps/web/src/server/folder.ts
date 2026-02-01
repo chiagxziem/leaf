@@ -54,6 +54,7 @@ export const folderQueryOptions = queryOptions({
   staleTime: 2 * 60 * 1000,
   // Keep folder tree in cache for quick access
   gcTime: 30 * 60 * 1000,
+  refetchInterval: 15000,
 });
 
 //* CREATE FOLDER

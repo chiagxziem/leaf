@@ -96,6 +96,7 @@ export const singleNoteQueryOptions = (noteId: string) =>
     staleTime: 60 * 1000,
     // Keep note data in cache longer for quick navigation
     gcTime: 15 * 60 * 1000,
+    refetchInterval: 10000,
   });
 
 //* CREATE NOTE
