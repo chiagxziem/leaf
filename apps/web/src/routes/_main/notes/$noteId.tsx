@@ -130,6 +130,12 @@ export const Route = createFileRoute("/_main/notes/$noteId")({
 
     return { noteId: params.noteId, note };
   },
+  pendingComponent: () => (
+    <div className="flex h-full w-full flex-col items-center justify-center gap-3 text-muted-foreground">
+      <Spinner className="size-8" />
+      <p className="text-sm">Loading note...</p>
+    </div>
+  ),
   component: NotePage,
 });
 
