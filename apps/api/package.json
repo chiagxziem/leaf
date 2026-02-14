@@ -2,9 +2,7 @@
   "name": "@repo/api",
   "type": "module",
   "scripts": {
-    "dev": "bun run --hot src/index.ts",
-    "build": "bun build --compile --minify --sourcemap src/index.ts --outfile api-exe",
-    "start": "./api-exe"
+    "dev": "bun run --hot src/index.ts"
   },
   "dependencies": {
     "@hono/standard-validator": "^0.2.2",
