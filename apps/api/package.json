@@ -2,7 +2,9 @@
   "name": "@repo/api",
   "type": "module",
   "scripts": {
-    "dev": "bun run --hot src/index.ts"
+    "dev": "bun run --hot src/index.ts",
+    "build": "bun build src/index.ts --outfile dist/index.js --minify --target=bun",
+    "start": "bun run dist/index.js"
   },
   "dependencies": {
     "@hono/standard-validator": "^0.2.2",
