@@ -2,14 +2,14 @@ import { APIError } from "better-auth";
 import { validator } from "hono-openapi";
 import type { ContentfulStatusCode } from "hono/utils/http-status";
 
+import { createRouter } from "@/app";
+import { auth } from "@/lib/auth";
+import HttpStatusCodes from "@/lib/http-status-codes";
+import { errorResponse, successResponse } from "@/lib/utils";
+import { authed } from "@/middleware/authed";
+import { validationHook } from "@/middleware/validation-hook";
 import { UserUpdateSchema } from "@repo/db/validators/user.validator";
 
-import { createRouter } from "../../app";
-import { auth } from "../../lib/auth";
-import HttpStatusCodes from "../../lib/http-status-codes";
-import { errorResponse, successResponse } from "../../lib/utils";
-import { authed } from "../../middleware/authed";
-import { validationHook } from "../../middleware/validation-hook";
 import { getUserDoc, updateUserDoc } from "./user.docs";
 
 const user = createRouter().use(authed);

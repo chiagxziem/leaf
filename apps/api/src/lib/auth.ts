@@ -2,9 +2,9 @@ import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { bearer } from "better-auth/plugins";
 
+import { createRootFolder } from "@/queries/folder-queries";
 import { db } from "@repo/db";
 
-import { createRootFolder } from "../queries/folder-queries";
 import { env } from "./env";
 
 export const auth = betterAuth({

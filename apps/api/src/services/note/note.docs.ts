@@ -1,9 +1,7 @@
 import { describeRoute } from "hono-openapi";
 import { z } from "zod";
 
-import { EncryptedNoteSelectSchema, NoteSelectSchema } from "@repo/db/validators/note.validator";
-
-import HttpStatusCodes from "../../lib/http-status-codes";
+import HttpStatusCodes from "@/lib/http-status-codes";
 import {
   createErrorResponse,
   createGenericErrorResponse,
@@ -11,8 +9,9 @@ import {
   createServerErrorResponse,
   createSuccessResponse,
   getErrDetailsFromErrFields,
-} from "../../lib/openapi";
-import { authExamples, notesExamples } from "../../lib/openapi-examples";
+} from "@/lib/openapi";
+import { authExamples, notesExamples } from "@/lib/openapi-examples";
+import { EncryptedNoteSelectSchema, NoteSelectSchema } from "@repo/db/validators/note.validator";
 
 const tags = ["Notes"];
 

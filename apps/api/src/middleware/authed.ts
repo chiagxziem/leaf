@@ -1,9 +1,9 @@
-import type { AppEnv } from "../types";
+import type { AppEnv } from "@/types";
 import { createMiddleware } from "hono/factory";
 
-import { auth } from "../lib/auth";
-import HttpStatusCodes from "../lib/http-status-codes";
-import { errorResponse } from "../lib/utils";
+import { auth } from "@/lib/auth";
+import HttpStatusCodes from "@/lib/http-status-codes";
+import { errorResponse } from "@/lib/utils";
 
 export const authed = createMiddleware<AppEnv>(async (c, next) => {
   const session = await auth.api.getSession({ headers: c.req.raw.headers });

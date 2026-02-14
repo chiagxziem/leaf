@@ -1,20 +1,12 @@
 import { validator } from "hono-openapi";
 import { z } from "zod";
 
-import { db, eq } from "@repo/db";
-import { folder } from "@repo/db/schemas/folder.schema";
-import {
-  FolderInsertSchema,
-  FolderUpdateSchema,
-  type FolderWithItems,
-} from "@repo/db/validators/folder.validator";
-
-import { createRouter } from "../../app";
-import { noteEvents } from "../../lib/events";
-import HttpStatusCodes from "../../lib/http-status-codes";
-import { errorResponse, successResponse } from "../../lib/utils";
-import { authed } from "../../middleware/authed";
-import { validationHook } from "../../middleware/validation-hook";
+import { createRouter } from "@/app";
+import { noteEvents } from "@/lib/events";
+import HttpStatusCodes from "@/lib/http-status-codes";
+import { errorResponse, successResponse } from "@/lib/utils";
+import { authed } from "@/middleware/authed";
+import { validationHook } from "@/middleware/validation-hook";
 import {
   createRootFolder as createRootFolderQuery,
   generateUniqueFolderName,
@@ -24,7 +16,15 @@ import {
   getRootFolderWithNestedItems,
   isDescendant,
   softDeleteFolderWithDescendants,
-} from "../../queries/folder-queries";
+} from "@/queries/folder-queries";
+import { db, eq } from "@repo/db";
+import { folder } from "@repo/db/schemas/folder.schema";
+import {
+  FolderInsertSchema,
+  FolderUpdateSchema,
+  type FolderWithItems,
+} from "@repo/db/validators/folder.validator";
+
 import {
   createFolderDoc,
   createRootFolderDoc,

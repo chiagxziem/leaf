@@ -1,7 +1,7 @@
 import type { Context } from "hono";
 
-import HttpStatusCodes from "../lib/http-status-codes";
-import { errorResponse } from "../lib/utils";
+import HttpStatusCodes from "@/lib/http-status-codes";
+import { errorResponse } from "@/lib/utils";
 
 /**
  * Path segment from Standard Schema spec

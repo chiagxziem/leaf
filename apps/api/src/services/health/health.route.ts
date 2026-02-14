@@ -1,6 +1,7 @@
-import { createRouter } from "../../app";
-import HttpStatusCodes from "../../lib/http-status-codes";
-import { successResponse } from "../../lib/utils";
+import { createRouter } from "@/app";
+import HttpStatusCodes from "@/lib/http-status-codes";
+import { successResponse } from "@/lib/utils";
+
 import { checkHealthDoc } from "./health.docs";
 
 const health = createRouter();
