@@ -2,9 +2,9 @@ import type { ErrorHandler } from "hono";
 import { HTTPException } from "hono/http-exception";
 import type { ContentfulStatusCode } from "hono/utils/http-status";
 
-import { env } from "@/lib/env";
-import HttpStatusCodes from "@/lib/http-status-codes";
-import { errorResponse } from "@/lib/utils";
+import { env } from "../lib/env";
+import HttpStatusCodes from "../lib/http-status-codes";
+import { errorResponse } from "../lib/utils";
 
 /**
  * Central error handler for the Hono app.

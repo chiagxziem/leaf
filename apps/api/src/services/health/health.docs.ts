@@ -1,12 +1,12 @@
 import { describeRoute } from "hono-openapi";
 import { z } from "zod";
 
-import HttpStatusCodes from "@/lib/http-status-codes";
+import HttpStatusCodes from "../../lib/http-status-codes";
 import {
   createRateLimitErrorResponse,
   createServerErrorResponse,
   createSuccessResponse,
-} from "@/lib/openapi";
+} from "../../lib/openapi";
 
 const tags = ["Health"];
 

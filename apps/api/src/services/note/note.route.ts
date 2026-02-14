@@ -1,22 +1,22 @@
-import type { EncryptedNote } from "@/types";
+import type { EncryptedNote } from "../../types";
 import { validator } from "hono-openapi";
 import { streamSSE } from "hono/streaming";
 import { ungzip } from "pako";
 import { z } from "zod";
 
-import { createRouter } from "@/app";
-import { decryptContent, encryptContent } from "@/lib/encryption";
-import { noteEvents } from "@/lib/events";
-import HttpStatusCodes from "@/lib/http-status-codes";
-import { errorResponse, successResponse } from "@/lib/utils";
-import { authed } from "@/middleware/authed";
-import { validationHook } from "@/middleware/validation-hook";
-import { getFolderForUser } from "@/queries/folder-queries";
-import { generateUniqueNoteTitle, getNoteForUser } from "@/queries/note-queries";
 import { db, eq } from "@repo/db";
 import { type Note, note } from "@repo/db/schemas/note.schema";
 import { NoteInsertSchema, NoteUpdateSchema } from "@repo/db/validators/note.validator";
 
+import { createRouter } from "../../app";
+import { decryptContent, encryptContent } from "../../lib/encryption";
+import { noteEvents } from "../../lib/events";
+import HttpStatusCodes from "../../lib/http-status-codes";
+import { errorResponse, successResponse } from "../../lib/utils";
+import { authed } from "../../middleware/authed";
+import { validationHook } from "../../middleware/validation-hook";
+import { getFolderForUser } from "../../queries/folder-queries";
+import { generateUniqueNoteTitle, getNoteForUser } from "../../queries/note-queries";
 import {
   copyNoteDoc,
   createNoteDoc,

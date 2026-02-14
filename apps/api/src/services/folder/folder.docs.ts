@@ -1,6 +1,12 @@
 import { describeRoute } from "hono-openapi";
 
-import HttpStatusCodes from "@/lib/http-status-codes";
+import {
+  FolderChildrenResponseSchema,
+  FolderSelectSchema,
+  FolderWithItemsSchema,
+} from "@repo/db/validators/folder.validator";
+
+import HttpStatusCodes from "../../lib/http-status-codes";
 import {
   createErrorResponse,
   createGenericErrorResponse,
@@ -8,13 +14,8 @@ import {
   createServerErrorResponse,
   createSuccessResponse,
   getErrDetailsFromErrFields,
-} from "@/lib/openapi";
-import { authExamples, foldersExamples } from "@/lib/openapi-examples";
-import {
-  FolderChildrenResponseSchema,
-  FolderSelectSchema,
-  FolderWithItemsSchema,
-} from "@repo/db/validators/folder.validator";
+} from "../../lib/openapi";
+import { authExamples, foldersExamples } from "../../lib/openapi-examples";
 
 const tags = ["Folders"];
 
