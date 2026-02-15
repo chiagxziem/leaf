@@ -11,7 +11,4 @@ app.route("/api/user", user);
 app.route("/api/folders", folder);
 app.route("/api/notes", note);
 
-export default {
-  port: 8000,
-  fetch: app.fetch,
-};
+export default app;

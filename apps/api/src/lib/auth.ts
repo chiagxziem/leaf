@@ -1,11 +1,10 @@
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { bearer } from "better-auth/plugins";
+import { env } from "cloudflare:workers";
 
 import { createRootFolder } from "@/queries/folder-queries";
 import { db } from "@repo/db";
-
-import { env } from "./env";
 
 export const auth = betterAuth({
   database: drizzleAdapter(db, {
@@ -64,9 +63,9 @@ export const auth = betterAuth({
         attributes: {
           path: "/",
           httpOnly: true,
-          secure: env.NODE_ENV === "production",
+          secure: process.env.NODE_ENV === "production",
           sameSite: "lax",
-          domain: env.NODE_ENV === "production" ? env.DOMAIN : undefined,
+          domain: process.env.NODE_ENV === "production" ? env.DOMAIN : undefined,
           expires: new Date(Date.now() + 60 * 60 * 24 * 30 * 1000),
         },
       },

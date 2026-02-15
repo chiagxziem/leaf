@@ -2,7 +2,6 @@ import type { ErrorHandler } from "hono";
 import { HTTPException } from "hono/http-exception";
 import type { ContentfulStatusCode } from "hono/utils/http-status";
 
-import { env } from "@/lib/env";
 import HttpStatusCodes from "@/lib/http-status-codes";
 import { errorResponse } from "@/lib/utils";
 
@@ -11,7 +10,7 @@ import { errorResponse } from "@/lib/utils";
  * Handles various error types and returns consistent error responses.
  */
 const errorHandler: ErrorHandler = (err, c) => {
-  const nodeEnv = c.env?.NODE_ENV || env.NODE_ENV;
+  const nodeEnv = c.env?.NODE_ENV || process.env.NODE_ENV;
   const isDev = nodeEnv !== "production";
 
   // Handle Hono HTTPException (thrown by middleware, auth, etc.)

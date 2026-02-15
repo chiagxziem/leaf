@@ -1,7 +1,7 @@
 import crypto, { scrypt } from "node:crypto";
 import { promisify } from "node:util";
 
-import { env } from "./env";
+import { env } from "cloudflare:workers";
 
 const scryptAsync = promisify(scrypt);
 
