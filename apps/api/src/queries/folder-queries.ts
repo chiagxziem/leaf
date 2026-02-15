@@ -4,7 +4,7 @@ import type { Folder } from "@repo/db/schemas/folder.schema";
 import type { Note } from "@repo/db/schemas/note.schema";
 import type { FolderWithItems } from "@repo/db/validators/folder.validator";
 
-import { db, sql } from "@repo/db";
+import { type Database, sql } from "@repo/db";
 import { folder } from "@repo/db/schemas/folder.schema";
 
 import { getUserById } from "./user-queries";
@@ -13,8 +13,8 @@ import { getUserById } from "./user-queries";
  * Ensures that a root folder exists for the given user, creating one if necessary.
  * Returns the root folder.
  */
-export const createRootFolder = async (userId: string) => {
-  const user = await getUserById(userId);
+export const createRootFolder = async (db: Database, userId: string) => {
+  const user = await getUserById(db, userId);
 
   if (user) {
     const existingRoot = await db.query.folder.findFirst({
@@ -48,6 +48,7 @@ export const createRootFolder = async (userId: string) => {
  * Only returns non-deleted folders.
  */
 export const getFolderForUser = async (
+  db: Database,
   folderId: string,
   userId: string,
 ): Promise<Folder | undefined> => {
@@ -64,6 +65,7 @@ export const getFolderForUser = async (
  * Only considers non-deleted folders.
  */
 export const generateUniqueFolderName = async (
+  db: Database,
   intendedName: string,
   userId: string,
   parentFolderId: string,
@@ -159,6 +161,7 @@ const buildFolderHierarchy = (
  * Only returns non-deleted folders and notes.
  */
 export const getFolderWithNestedItems = async (
+  db: Database,
   folderId: string,
   userId: string,
 ): Promise<FolderWithItems | null> => {
@@ -186,6 +189,7 @@ export const getFolderWithNestedItems = async (
  * Gets the root folder (isRoot: true) for a user, with all its nested folders and notes.
  */
 export const getRootFolderWithNestedItems = async (
+  db: Database,
   userId: string,
 ): Promise<FolderWithItems | null> => {
   // Find the root folder for the user
@@ -198,7 +202,7 @@ export const getRootFolderWithNestedItems = async (
   }
 
   // Use the existing function to get nested items
-  return getFolderWithNestedItems(rootFolder.id, userId);
+  return getFolderWithNestedItems(db, rootFolder.id, userId);
 };
 
 /**
@@ -221,6 +225,7 @@ export type FolderChildrenResponse = {
  * Used for lazy loading the folder tree.
  */
 export const getFolderChildren = async (
+  db: Database,
   folderId: string,
   userId: string,
 ): Promise<FolderChildrenResponse | null> => {
@@ -266,7 +271,7 @@ export const getFolderChildren = async (
   const foldersWithHints: FolderChildItem[] = await Promise.all(
     childFolders.map(async (f) => {
       const item = Object.assign(f, {
-        hasChildren: await hasDescendants(f.id, userId),
+        hasChildren: await hasDescendants(db, f.id, userId),
       });
       return item;
     }),
@@ -279,7 +284,7 @@ export const getFolderChildren = async (
  * Checks if a folder has any direct children (folders or notes).
  * Used to determine if the expand arrow should be shown.
  */
-const hasDescendants = async (folderId: string, userId: string): Promise<boolean> => {
+const hasDescendants = async (db: Database, folderId: string, userId: string): Promise<boolean> => {
   // Check for child folders first (more likely)
   const childFolder = await db.query.folder.findFirst({
     where: (folder, { and, eq, isNull }) =>
@@ -304,6 +309,7 @@ const hasDescendants = async (folderId: string, userId: string): Promise<boolean
  * Uses a recursive CTE to avoid N+1 queries.
  */
 export const isDescendant = async (
+  db: Database,
   folderId: string,
   targetParentId: string,
   userId: string,
@@ -340,6 +346,7 @@ export const isDescendant = async (
  * Uses a recursive CTE to find all descendant folders efficiently.
  */
 export const softDeleteFolderWithDescendants = async (
+  db: Database,
   folderId: string,
   userId: string,
 ): Promise<void> => {

@@ -1,10 +1,10 @@
-import { db } from "@repo/db";
+import type { Database } from "@repo/db";
 
 /**
  * Fetches the note with the given ID belonging to the specified user, or null if not found.
  * Only returns non-deleted notes.
  */
-export const getNoteForUser = async (noteId: string, userId: string) => {
+export const getNoteForUser = async (db: Database, noteId: string, userId: string) => {
   const note = await db.query.note.findFirst({
     where: (note, { and, eq, isNull }) =>
       and(eq(note.id, noteId), eq(note.userId, userId), isNull(note.deletedAt)),
@@ -18,6 +18,7 @@ export const getNoteForUser = async (noteId: string, userId: string) => {
  * Only considers non-deleted notes.
  */
 export const generateUniqueNoteTitle = async (
+  db: Database,
   intendedTitle: string,
   userId: string,
   folderId: string,

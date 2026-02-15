@@ -13,7 +13,7 @@ import { authed } from "@/middleware/authed";
 import { validationHook } from "@/middleware/validation-hook";
 import { getFolderForUser } from "@/queries/folder-queries";
 import { generateUniqueNoteTitle, getNoteForUser } from "@/queries/note-queries";
-import { db, eq } from "@repo/db";
+import { eq } from "@repo/db";
 import { type Note, note } from "@repo/db/schemas/note.schema";
 import { NoteInsertSchema, NoteUpdateSchema } from "@repo/db/validators/note.validator";
 
@@ -102,7 +102,7 @@ noteRouter.get("/sse", async (c) => {
 // Get all notes
 noteRouter.get("/", getAllNotesDoc, async (c) => {
   try {
-    const notes = await db.query.note.findMany();
+    const notes = await c.get("db").query.note.findMany();
 
     return c.json(successResponse(notes, "All notes retrieved successfully"), HttpStatusCodes.OK);
   } catch (error) {
@@ -135,13 +135,15 @@ noteRouter.post(
         );
       }
 
-      const folder = await getFolderForUser(noteData.folderId, user.id);
+      const db = c.get("db");
+      const folder = await getFolderForUser(db, noteData.folderId, user.id);
 
       if (!folder) {
         return c.json(errorResponse("NOT_FOUND", "Folder not found"), HttpStatusCodes.NOT_FOUND);
       }
 
       const uniqueTitle = await generateUniqueNoteTitle(
+        db,
         noteData.title || "untitled",
         user.id,
         noteData.folderId,
@@ -172,7 +174,7 @@ noteRouter.post(
         title: uniqueTitle,
       };
 
-      const [newNote] = await db.insert(note).values(payload).returning();
+      const [newNote] = await c.get("db").insert(note).values(payload).returning();
 
       // Emit realtime update event
       console.log(`[SSE] Emitting note-created for note ${newNote.id}`);
@@ -199,7 +201,7 @@ noteRouter.get(
     const { id } = c.req.valid("param");
 
     try {
-      const foundNote = await getNoteForUser(id, user.id);
+      const foundNote = await getNoteForUser(c.get("db"), id, user.id);
 
       if (!foundNote) {
         return c.json(errorResponse("NOT_FOUND", "Note not found"), HttpStatusCodes.NOT_FOUND);
@@ -263,7 +265,7 @@ noteRouter.get(
     const { id } = c.req.valid("param");
 
     try {
-      const noteToBeCopied = await getNoteForUser(id, user.id);
+      const noteToBeCopied = await getNoteForUser(c.get("db"), id, user.id);
 
       // Check if the note exists
       if (!noteToBeCopied) {
@@ -271,6 +273,7 @@ noteRouter.get(
       }
 
       const uniqueTitle = await generateUniqueNoteTitle(
+        c.get("db"),
         noteToBeCopied.title || "untitled",
         user.id,
         noteToBeCopied.folderId,
@@ -298,7 +301,7 @@ noteRouter.get(
         isFavorite: false,
       };
 
-      const [copiedNote] = await db.insert(note).values(payload).returning();
+      const [copiedNote] = await c.get("db").insert(note).values(payload).returning();
 
       // Emit realtime update event
       console.log(`[SSE] Emitting note-copied for note ${copiedNote.id}`);
@@ -336,13 +339,14 @@ noteRouter.patch(
     const { favorite } = c.req.valid("json");
 
     try {
-      const foundNote = await getNoteForUser(id, user.id);
+      const foundNote = await getNoteForUser(c.get("db"), id, user.id);
 
       if (!foundNote) {
         return c.json(errorResponse("NOT_FOUND", "Note not found"), HttpStatusCodes.NOT_FOUND);
       }
 
-      const [updatedNote] = await db
+      const [updatedNote] = await c
+        .get("db")
         .update(note)
         .set({ isFavorite: favorite })
         .where(eq(note.id, id))
@@ -384,7 +388,7 @@ noteRouter.patch(
     const { folderId } = c.req.valid("json");
 
     try {
-      const foundNote = await getNoteForUser(id, user.id);
+      const foundNote = await getNoteForUser(c.get("db"), id, user.id);
 
       if (!foundNote) {
         return c.json(errorResponse("NOTE_NOT_FOUND", "Note not found"), HttpStatusCodes.NOT_FOUND);
@@ -394,7 +398,7 @@ noteRouter.patch(
         return c.json(successResponse(foundNote, "Note moved successfully"), HttpStatusCodes.OK);
       }
 
-      const folder = await getFolderForUser(folderId, user.id);
+      const folder = await getFolderForUser(c.get("db"), folderId, user.id);
       if (!folder) {
         return c.json(
           errorResponse("FOLDER_NOT_FOUND", "Folder not found"),
@@ -402,9 +406,15 @@ noteRouter.patch(
         );
       }
 
-      const uniqueTitle = await generateUniqueNoteTitle(foundNote.title, user.id, folderId);
+      const uniqueTitle = await generateUniqueNoteTitle(
+        c.get("db"),
+        foundNote.title,
+        user.id,
+        folderId,
+      );
 
-      const [updatedNote] = await db
+      const [updatedNote] = await c
+        .get("db")
         .update(note)
         .set({ folderId, title: uniqueTitle })
         .where(eq(note.id, id))
@@ -439,7 +449,8 @@ noteRouter.put(
     const noteData = c.req.valid("json");
 
     try {
-      const foundNote = await getNoteForUser(id, user.id);
+      const db = c.get("db");
+      const foundNote = await getNoteForUser(db, id, user.id);
 
       if (!foundNote) {
         return c.json(errorResponse("NOTE_NOT_FOUND", "Note not found"), HttpStatusCodes.NOT_FOUND);
@@ -466,7 +477,7 @@ noteRouter.put(
       const isFavorite = noteData.isFavorite ?? foundNote.isFavorite;
 
       if (folderId !== foundNote.folderId) {
-        const folder = await getFolderForUser(folderId, user.id);
+        const folder = await getFolderForUser(db, folderId, user.id);
         if (!folder) {
           return c.json(
             errorResponse("FOLDER_NOT_FOUND", "Folder not found"),
@@ -501,7 +512,7 @@ noteRouter.put(
 
       let newTitle = title;
       if (folderId !== foundNote.folderId || title !== foundNote.title) {
-        newTitle = await generateUniqueNoteTitle(title, user.id, folderId);
+        newTitle = await generateUniqueNoteTitle(db, title, user.id, folderId);
       }
 
       const updatePayload = {
@@ -562,14 +573,15 @@ noteRouter.delete(
     const { id } = c.req.valid("param");
 
     try {
-      const foundNote = await getNoteForUser(id, user.id);
+      const foundNote = await getNoteForUser(c.get("db"), id, user.id);
 
       if (!foundNote) {
         return c.json(errorResponse("NOTE_NOT_FOUND", "Note not found"), HttpStatusCodes.NOT_FOUND);
       }
 
       // Soft delete: set deletedAt timestamp instead of hard delete
-      const [deletedNote] = await db
+      const [deletedNote] = await c
+        .get("db")
         .update(note)
         .set({ deletedAt: new Date() })
         .where(eq(note.id, id))

@@ -3,12 +3,12 @@ import { Scalar } from "@scalar/hono-api-reference";
 import { env } from "cloudflare:workers";
 import { Hono } from "hono";
 import { openAPIRouteHandler } from "hono-openapi";
-// import { compress } from "hono/compress";
 import { cors } from "hono/cors";
 import { logger } from "hono/logger";
 import { secureHeaders } from "hono/secure-headers";
 
 import { auth } from "@/lib/auth";
+import { dbMiddleware } from "@/middleware/db";
 import emojiFavicon from "@/middleware/emoji-favicon";
 import errorHandler from "@/middleware/error-handler";
 import notFoundRoute from "@/middleware/not-found-route";
@@ -34,6 +34,9 @@ export const createApp = () => {
       credentials: true,
     }),
   );
+
+  // Database middleware — creates db from c.env.DATABASE_URL
+  app.use("/*", dbMiddleware);
 
   app.use("/api/auth/*", authRateLimiter);
   app.use("/api/*", apiRateLimiter);

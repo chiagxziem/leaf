@@ -4,10 +4,10 @@ import { bearer } from "better-auth/plugins";
 import { env } from "cloudflare:workers";
 
 import { createRootFolder } from "@/queries/folder-queries";
-import { db } from "@repo/db";
+import { createDb } from "@repo/db";
 
 export const auth = betterAuth({
-  database: drizzleAdapter(db, {
+  database: drizzleAdapter(createDb(env.DATABASE_URL), {
     provider: "pg",
   }),
 
@@ -28,7 +28,7 @@ export const auth = betterAuth({
     user: {
       create: {
         after: async (user) => {
-          await createRootFolder(user.id);
+          await createRootFolder(createDb(env.DATABASE_URL), user.id);
         },
       },
     },

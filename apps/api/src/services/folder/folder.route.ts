@@ -17,7 +17,7 @@ import {
   isDescendant,
   softDeleteFolderWithDescendants,
 } from "@/queries/folder-queries";
-import { db, eq } from "@repo/db";
+import { eq } from "@repo/db";
 import { folder } from "@repo/db/schemas/folder.schema";
 import {
   FolderInsertSchema,
@@ -59,9 +59,9 @@ folderRouter.get(
       let folderWithItems: FolderWithItems | null;
 
       if (folderId) {
-        folderWithItems = await getFolderWithNestedItems(folderId, user.id);
+        folderWithItems = await getFolderWithNestedItems(c.get("db"), folderId, user.id);
       } else {
-        folderWithItems = await getRootFolderWithNestedItems(user.id);
+        folderWithItems = await getRootFolderWithNestedItems(c.get("db"), user.id);
       }
 
       if (!folderWithItems) {
@@ -100,7 +100,8 @@ folderRouter.post(
     const folderData = c.req.valid("json");
 
     try {
-      const parentFolder = await getFolderForUser(folderData.parentFolderId, user.id);
+      const db = c.get("db");
+      const parentFolder = await getFolderForUser(db, folderData.parentFolderId, user.id);
 
       if (!parentFolder) {
         return c.json(
@@ -110,6 +111,7 @@ folderRouter.post(
       }
 
       const uniqueTitle = await generateUniqueFolderName(
+        db,
         folderData.name || "untitled",
         user.id,
         folderData.parentFolderId,
@@ -160,7 +162,8 @@ folderRouter.patch(
     const { parentFolderId } = c.req.valid("json");
 
     try {
-      const foundFolder = await getFolderForUser(id, user.id);
+      const db = c.get("db");
+      const foundFolder = await getFolderForUser(db, id, user.id);
 
       if (!foundFolder) {
         return c.json(
@@ -183,7 +186,7 @@ folderRouter.patch(
         );
       }
 
-      const parentFolder = await getFolderForUser(parentFolderId, user.id);
+      const parentFolder = await getFolderForUser(db, parentFolderId, user.id);
       if (!parentFolder) {
         return c.json(
           errorResponse("PARENT_FOLDER_NOT_FOUND", "Parent folder not found"),
@@ -191,7 +194,7 @@ folderRouter.patch(
         );
       }
 
-      if (await isDescendant(id, parentFolderId, user.id)) {
+      if (await isDescendant(db, id, parentFolderId, user.id)) {
         return c.json(
           errorResponse("FOLDER_CYCLE", "Cannot move a folder into its own descendant or itself"),
           HttpStatusCodes.UNPROCESSABLE_ENTITY,
@@ -200,6 +203,7 @@ folderRouter.patch(
 
       const updatedFolder = await db.transaction(async (tx) => {
         const uniqueName = await generateUniqueFolderName(
+          db,
           foundFolder.name,
           user.id,
           parentFolderId,
@@ -248,7 +252,8 @@ folderRouter.put(
     const folderData = c.req.valid("json");
 
     try {
-      const foundFolder = await getFolderForUser(id, user.id);
+      const db = c.get("db");
+      const foundFolder = await getFolderForUser(db, id, user.id);
 
       if (!foundFolder) {
         return c.json(
@@ -266,14 +271,14 @@ folderRouter.put(
 
       const parentFolderId = folderData.parentFolderId ?? foundFolder.parentFolderId;
       if (parentFolderId !== foundFolder.parentFolderId) {
-        const parentFolder = await getFolderForUser(parentFolderId, user.id);
+        const parentFolder = await getFolderForUser(db, parentFolderId, user.id);
         if (!parentFolder) {
           return c.json(
             errorResponse("PARENT_FOLDER_NOT_FOUND", "Parent folder not found"),
             HttpStatusCodes.NOT_FOUND,
           );
         }
-        if (await isDescendant(id, parentFolderId, user.id)) {
+        if (await isDescendant(db, id, parentFolderId, user.id)) {
           return c.json(
             errorResponse("FOLDER_CYCLE", "Cannot move a folder into its own descendant or itself"),
             HttpStatusCodes.UNPROCESSABLE_ENTITY,
@@ -309,7 +314,7 @@ folderRouter.put(
       const updatedFolder = await db.transaction(async (tx) => {
         let name = folderData.name ?? foundFolder.name;
         if (parentFolderId !== foundFolder.parentFolderId || name !== foundFolder.name) {
-          name = await generateUniqueFolderName(name, user.id, parentFolderId);
+          name = await generateUniqueFolderName(db, name, user.id, parentFolderId);
         }
 
         const [updated] = await tx
@@ -352,7 +357,7 @@ folderRouter.delete(
     const { id } = c.req.valid("param");
 
     try {
-      const foundFolder = await getFolderForUser(id, user.id);
+      const foundFolder = await getFolderForUser(c.get("db"), id, user.id);
 
       if (!foundFolder) {
         return c.json(errorResponse("NOT_FOUND", "Folder not found"), HttpStatusCodes.NOT_FOUND);
@@ -366,7 +371,7 @@ folderRouter.delete(
       }
 
       // Soft delete: cascade to all descendant folders and notes
-      await softDeleteFolderWithDescendants(id, user.id);
+      await softDeleteFolderWithDescendants(c.get("db"), id, user.id);
 
       // Return the folder with deletedAt set
       const deletedFolder = { ...foundFolder, deletedAt: new Date() };
@@ -399,7 +404,7 @@ folderRouter.get(
     const { id } = c.req.valid("param");
 
     try {
-      const children = await getFolderChildrenQuery(id, user.id);
+      const children = await getFolderChildrenQuery(c.get("db"), id, user.id);
 
       if (!children) {
         return c.json(errorResponse("NOT_FOUND", "Folder not found"), HttpStatusCodes.NOT_FOUND);
@@ -424,7 +429,7 @@ folderRouter.post("/root", createRootFolderDoc, async (c) => {
   const user = c.get("user");
 
   try {
-    const rootFolder = await createRootFolderQuery(user.id);
+    const rootFolder = await createRootFolderQuery(c.get("db"), user.id);
 
     if (!rootFolder) {
       return c.json(

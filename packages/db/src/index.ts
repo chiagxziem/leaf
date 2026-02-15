@@ -1,5 +1,6 @@
 import { neon } from "@neondatabase/serverless";
-import { type NeonHttpDatabase, drizzle } from "drizzle-orm/neon-http";
+import { type NeonHttpDatabase, drizzle as drizzleNeon } from "drizzle-orm/neon-http";
+import { type NodePgDatabase, drizzle as drizzleNode } from "drizzle-orm/node-postgres";
 
 import * as authSchema from "./schemas/auth.schema";
 import * as userSchema from "./schemas/auth.schema";
@@ -13,27 +14,29 @@ const schema = {
   ...userSchema,
 };
 
-// Lazy initialization — defers neon() call until first use so that
-// process.env.DATABASE_URL is available at request time in Cloudflare Workers.
-let _db: NeonHttpDatabase<typeof schema> | null = null;
+export type Database = NeonHttpDatabase<typeof schema> | NodePgDatabase<typeof schema>;
 
-function getDb(): NeonHttpDatabase<typeof schema> {
-  if (!_db) {
-    const sql = neon(process.env.DATABASE_URL!);
-    _db = drizzle({
+/**
+ * Creates a database instance with the appropriate driver based on the URL.
+ *
+ * - Neon URLs (containing `neon.tech`) → uses `@neondatabase/serverless` (HTTP)
+ * - All other URLs (e.g. local Postgres) → uses `pg` (node-postgres)
+ */
+export const createDb = (databaseUrl: string): Database => {
+  if (databaseUrl.includes("neon.tech")) {
+    const sql = neon(databaseUrl);
+    return drizzleNeon({
       client: sql,
       schema,
       casing: "snake_case",
     });
   }
-  return _db;
-}
 
-const db = new Proxy({} as NeonHttpDatabase<typeof schema>, {
-  get(_, prop) {
-    return (getDb() as any)[prop];
-  },
-});
+  return drizzleNode({
+    connection: databaseUrl,
+    schema,
+    casing: "snake_case",
+  });
+};
 
 export * from "drizzle-orm";
-export { db };
