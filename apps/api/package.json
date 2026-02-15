@@ -3,8 +3,7 @@
   "type": "module",
   "scripts": {
     "dev": "wrangler dev",
-    "build": "bun build src/index.ts --outfile dist/index.js --minify --target=bun --external cloudflare:workers",
-    "start": "bun run dist/index.js",
+    "deploy": "wrangler deploy",
     "cf-typegen": "wrangler types --env-interface CloudflareBindings"
   },
   "dependencies": {
