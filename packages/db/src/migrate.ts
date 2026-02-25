@@ -10,7 +10,7 @@ const runMigrations = async () => {
 
     const start = Date.now();
     await migrate(db, {
-      migrationsFolder: path.join(process.cwd(), "migrations"),
+      migrationsFolder: path.join(import.meta.dir, "migrations"),
     });
     const end = Date.now();
 
