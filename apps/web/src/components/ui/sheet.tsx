@@ -8,19 +8,28 @@ const Sheet = ({ ...props }: ComponentProps<typeof SheetPrimitive.Root>) => {
   return <SheetPrimitive.Root data-slot="sheet" {...props} />;
 };
 
-const SheetTrigger = ({ ...props }: ComponentProps<typeof SheetPrimitive.Trigger>) => {
+const SheetTrigger = ({
+  ...props
+}: ComponentProps<typeof SheetPrimitive.Trigger>) => {
   return <SheetPrimitive.Trigger data-slot="sheet-trigger" {...props} />;
 };
 
-const SheetClose = ({ ...props }: ComponentProps<typeof SheetPrimitive.Close>) => {
+const SheetClose = ({
+  ...props
+}: ComponentProps<typeof SheetPrimitive.Close>) => {
   return <SheetPrimitive.Close data-slot="sheet-close" {...props} />;
 };
 
-const SheetPortal = ({ ...props }: ComponentProps<typeof SheetPrimitive.Portal>) => {
+const SheetPortal = ({
+  ...props
+}: ComponentProps<typeof SheetPrimitive.Portal>) => {
   return <SheetPrimitive.Portal data-slot="sheet-portal" {...props} />;
 };
 
-const SheetOverlay = ({ className, ...props }: ComponentProps<typeof SheetPrimitive.Overlay>) => {
+const SheetOverlay = ({
+  className,
+  ...props
+}: ComponentProps<typeof SheetPrimitive.Overlay>) => {
   return (
     <SheetPrimitive.Overlay
       className={cn(
@@ -90,7 +99,10 @@ const SheetFooter = ({ className, ...props }: ComponentProps<"div">) => {
   );
 };
 
-const SheetTitle = ({ className, ...props }: ComponentProps<typeof SheetPrimitive.Title>) => {
+const SheetTitle = ({
+  className,
+  ...props
+}: ComponentProps<typeof SheetPrimitive.Title>) => {
   return (
     <SheetPrimitive.Title
       className={cn("font-semibold text-foreground", className)}

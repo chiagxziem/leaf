@@ -24,7 +24,10 @@ export const generateEncryptionSalt = (): string => {
  * Derives a per-user encryption key from the master key and user's salt.
  * Uses scrypt for secure key derivation.
  */
-export const deriveUserKey = async (userId: string, userSalt: string): Promise<Buffer> => {
+export const deriveUserKey = async (
+  userId: string,
+  userSalt: string,
+): Promise<Buffer> => {
   const cacheKey = `${userId}:${userSalt}`;
 
   // Check cache first
@@ -55,9 +58,15 @@ export const deriveUserKey = async (userId: string, userSalt: string): Promise<B
  * Encrypts content using the master key (legacy v1 encryption).
  * Used for backward compatibility with existing notes.
  */
-export const encryptContent = (content: string): { encrypted: string; iv: string; tag: string } => {
+export const encryptContent = (
+  content: string,
+): { encrypted: string; iv: string; tag: string } => {
   const iv = crypto.randomBytes(16);
-  const cipher = crypto.createCipheriv(ALGORITHM, Buffer.from(MASTER_KEY, "hex"), iv);
+  const cipher = crypto.createCipheriv(
+    ALGORITHM,
+    Buffer.from(MASTER_KEY, "hex"),
+    iv,
+  );
 
   let encrypted = cipher.update(content, "utf8", "hex");
   encrypted += cipher.final("hex");
@@ -74,7 +83,11 @@ export const encryptContent = (content: string): { encrypted: string; iv: string
  * Decrypts content using the master key (legacy v1 encryption).
  * Used for backward compatibility with existing notes.
  */
-export const decryptContent = (encrypted: string, iv: string, tag: string): string => {
+export const decryptContent = (
+  encrypted: string,
+  iv: string,
+  tag: string,
+): string => {
   const decipher = crypto.createDecipheriv(
     ALGORITHM,
     Buffer.from(MASTER_KEY, "hex"),
@@ -122,7 +135,11 @@ export const decryptContentV2 = async (
   userSalt: string,
 ): Promise<string> => {
   const userKey = await deriveUserKey(userId, userSalt);
-  const decipher = crypto.createDecipheriv(ALGORITHM, userKey, Buffer.from(iv, "hex"));
+  const decipher = crypto.createDecipheriv(
+    ALGORITHM,
+    userKey,
+    Buffer.from(iv, "hex"),
+  );
   decipher.setAuthTag(Buffer.from(tag, "hex"));
 
   let decrypted = decipher.update(encrypted, "hex", "utf8");

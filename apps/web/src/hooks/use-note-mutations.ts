@@ -1,6 +1,3 @@
-import type { User } from "@repo/db/schemas/auth.schema";
-import type { Note } from "@repo/db/schemas/note.schema";
-import type { FolderWithItems } from "@repo/db/validators/folder.validator";
 import type { QueryClient } from "@tanstack/react-query";
 import { useMutation } from "@tanstack/react-query";
 import { useLocation, useNavigate } from "@tanstack/react-router";
@@ -8,13 +5,27 @@ import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
 import { toast } from "sonner";
 
+import type { User } from "@repo/db/schemas/auth.schema";
+import type { Note } from "@repo/db/schemas/note.schema";
+import type { FolderWithItems } from "@repo/db/validators/folder.validator";
+
 import { useSidebar } from "@/components/ui/sidebar";
 import { cancelToastEl } from "@/components/ui/toaster";
 import { apiErrorHandler } from "@/lib/handle-api-error";
 import { queryKeys } from "@/lib/query";
-import { getMostRecentlyUpdatedNote, parseNoteIdFromPath, suggestUniqueTitle } from "@/lib/utils";
+import {
+  getMostRecentlyUpdatedNote,
+  parseNoteIdFromPath,
+  suggestUniqueTitle,
+} from "@/lib/utils";
 import { folderQueryOptions } from "@/server/folder";
-import { $createNote, $deleteNote, $makeNoteCopy, $moveNote, $renameNote } from "@/server/note";
+import {
+  $createNote,
+  $deleteNote,
+  $makeNoteCopy,
+  $moveNote,
+  $renameNote,
+} from "@/server/note";
 
 type Params = {
   queryClient: QueryClient;
@@ -51,7 +62,12 @@ const findNoteAndParent = (
   return null;
 };
 
-export function useNoteMutations({ queryClient, rootFolder, user, setActiveNoteParentId }: Params) {
+export function useNoteMutations({
+  queryClient,
+  rootFolder,
+  user,
+  setActiveNoteParentId,
+}: Params) {
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -91,7 +107,8 @@ export function useNoteMutations({ queryClient, rootFolder, user, setActiveNoteP
       createNoteFn({ data: { title: vars.title, folderId: vars.parentId } }),
     onMutate: async (vars) => {
       const parentId = vars.parentId ?? rootFolder?.id;
-      if (!parentId || !rootFolder) return { previous: null as FolderWithItems | null };
+      if (!parentId || !rootFolder)
+        return { previous: null as FolderWithItems | null };
 
       // Cancel any outgoing refetches (so they don't overwrite the optimistic update)
       await queryClient.cancelQueries({
@@ -172,7 +189,9 @@ export function useNoteMutations({ queryClient, rootFolder, user, setActiveNoteP
 
       // If mutation succeeds, get the real new note from the server response
       const serverNote = data.data as Note;
-      const current = queryClient.getQueryData<FolderWithItems | null>(folderQueryOptions.queryKey);
+      const current = queryClient.getQueryData<FolderWithItems | null>(
+        folderQueryOptions.queryKey,
+      );
       if (!current) return;
 
       // Replace the temporary note in the folder structure with the real one
@@ -225,7 +244,8 @@ export function useNoteMutations({ queryClient, rootFolder, user, setActiveNoteP
   /* DELETE NOTE */
   const deleteNoteMutation = useMutation({
     mutationKey: ["delete-note"],
-    mutationFn: async (vars: { noteId: string }) => deleteNoteFn({ data: { noteId: vars.noteId } }),
+    mutationFn: async (vars: { noteId: string }) =>
+      deleteNoteFn({ data: { noteId: vars.noteId } }),
     onMutate: async ({ noteId }) => {
       // Cancel any outgoing refetches (so they don't overwrite the optimistic update)
       await queryClient.cancelQueries({
@@ -244,7 +264,10 @@ export function useNoteMutations({ queryClient, rootFolder, user, setActiveNoteP
       const removeNote = (node: FolderWithItems): boolean => {
         const idx = node.notes.findIndex((n) => n.id === noteId);
         if (idx !== -1) {
-          node.notes = [...node.notes.slice(0, idx), ...node.notes.slice(idx + 1)];
+          node.notes = [
+            ...node.notes.slice(0, idx),
+            ...node.notes.slice(idx + 1),
+          ];
           removed = true;
           return true;
         }
@@ -364,7 +387,8 @@ export function useNoteMutations({ queryClient, rootFolder, user, setActiveNoteP
   /* COPY NOTE */
   const copyNoteMutation = useMutation({
     mutationKey: ["copy-note"],
-    mutationFn: async (vars: { noteId: string }) => copyNoteFn({ data: { noteId: vars.noteId } }),
+    mutationFn: async (vars: { noteId: string }) =>
+      copyNoteFn({ data: { noteId: vars.noteId } }),
     onMutate: async ({ noteId }) => {
       if (!rootFolder)
         return {
@@ -441,7 +465,9 @@ export function useNoteMutations({ queryClient, rootFolder, user, setActiveNoteP
 
       // If mutation succeeds, get the real copied note from the server response
       const serverNote = data.data as Note;
-      const current = queryClient.getQueryData<FolderWithItems | null>(folderQueryOptions.queryKey);
+      const current = queryClient.getQueryData<FolderWithItems | null>(
+        folderQueryOptions.queryKey,
+      );
       if (!current) return;
 
       // Replace the temporary copied note in the folder structure with the real one
@@ -494,7 +520,8 @@ export function useNoteMutations({ queryClient, rootFolder, user, setActiveNoteP
   /* MOVE NOTE */
   const moveNoteMutation = useMutation({
     mutationKey: ["move-note"],
-    mutationFn: async (vars: { noteId: string; folderId: string }) => moveNoteFn({ data: vars }),
+    mutationFn: async (vars: { noteId: string; folderId: string }) =>
+      moveNoteFn({ data: vars }),
     onMutate: async ({ noteId, folderId }) => {
       if (!rootFolder) return { previous: null as FolderWithItems | null };
 
@@ -528,7 +555,10 @@ export function useNoteMutations({ queryClient, rootFolder, user, setActiveNoteP
 
       const newParent = findFolder(draft);
       if (newParent) {
-        newParent.notes = [...newParent.notes, { ...note, folderId, updatedAt: new Date() }];
+        newParent.notes = [
+          ...newParent.notes,
+          { ...note, folderId, updatedAt: new Date() },
+        ];
       }
 
       queryClient.setQueryData(folderQueryOptions.queryKey, draft);

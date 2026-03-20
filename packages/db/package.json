@@ -7,14 +7,14 @@
     "./validators/*": "./src/validators/*.ts"
   },
   "scripts": {
-    "db:up": "docker compose up -d",
-    "db:down": "docker compose down",
     "db:delete": "docker compose down -v",
-    "db:psql": "docker exec -it leaf-pg psql -U user -d leaf",
+    "db:down": "docker compose down",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
+    "db:psql": "docker exec -it leaf-pg psql -U user -d leaf",
     "db:push": "drizzle-kit push",
-    "db:studio": "drizzle-kit studio"
+    "db:studio": "drizzle-kit studio",
+    "db:up": "docker compose up -d"
   },
   "dependencies": {
     "@t3-oss/env-core": "^0.13.10",

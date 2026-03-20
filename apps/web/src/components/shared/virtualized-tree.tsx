@@ -1,6 +1,3 @@
-import type { DraggedItem } from "@/hooks/use-tree-dnd";
-import type { Note } from "@repo/db/schemas/note.schema";
-import type { FolderWithItems } from "@repo/db/validators/folder.validator";
 import { Link, useMatchRoute, useNavigate } from "@tanstack/react-router";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import { useClickAway } from "@uidotdev/usehooks";
@@ -18,9 +15,13 @@ import {
   TbTrash,
 } from "react-icons/tb";
 
+import type { Note } from "@repo/db/schemas/note.schema";
+import type { FolderWithItems } from "@repo/db/validators/folder.validator";
+
 import { Spinner } from "@/components/ui/spinner";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { usePersistentFocus } from "@/hooks/use-persistent-focus";
+import type { DraggedItem } from "@/hooks/use-tree-dnd";
 import { sortFolderItems, suggestUniqueTitle } from "@/lib/utils";
 
 import { Button } from "../ui/button";
@@ -127,7 +128,11 @@ function flattenTree(
 ): TreeNode[] {
   const nodes: TreeNode[] = [];
 
-  const walk = (folder: FolderWithItems, depth: number, parentId: string | null) => {
+  const walk = (
+    folder: FolderWithItems,
+    depth: number,
+    parentId: string | null,
+  ) => {
     const { folders, notes } = sortFolderItems(folder);
     const isOpen = openFolderIds.has(folder.id);
     const isRootFolder = folder.isRoot;
@@ -152,14 +157,20 @@ function flattenTree(
       // Add child folders
       for (const childFolder of folders) {
         // Update sibling names for this folder
-        const siblingNames = folders.filter((f) => f.id !== childFolder.id).map((f) => f.name);
+        const siblingNames = folders
+          .filter((f) => f.id !== childFolder.id)
+          .map((f) => f.name);
 
         // Temporarily set siblingNames on the node we're about to add
         walk(childFolder, childDepth, folder.id);
 
         // Find the node we just added and update its siblingNames
         const lastNode = nodes[nodes.length - 1];
-        if (lastNode && lastNode.type === "folder" && lastNode.id === childFolder.id) {
+        if (
+          lastNode &&
+          lastNode.type === "folder" &&
+          lastNode.id === childFolder.id
+        ) {
           lastNode.siblingNames = siblingNames;
         }
       }
@@ -177,7 +188,9 @@ function flattenTree(
 
       // Add notes
       for (const note of notes) {
-        const siblingTitles = notes.filter((n) => n.id !== note.id).map((n) => n.title);
+        const siblingTitles = notes
+          .filter((n) => n.id !== note.id)
+          .map((n) => n.title);
         nodes.push({
           type: "note",
           id: note.id,
@@ -244,7 +257,13 @@ export const VirtualizedTree = ({
 
   // Flatten the tree for virtualization
   const flatNodes = useMemo(
-    () => flattenTree(rootFolder, openFolderIds, activeParentId, activeNoteParentId),
+    () =>
+      flattenTree(
+        rootFolder,
+        openFolderIds,
+        activeParentId,
+        activeNoteParentId,
+      ),
     [rootFolder, openFolderIds, activeParentId, activeNoteParentId],
   );
 
@@ -259,7 +278,8 @@ export const VirtualizedTree = ({
   const { folders, notes } = sortFolderItems(rootFolder);
   const hasNoItems = folders.length === 0 && notes.length === 0;
   // Show empty state only if there are no items AND no active creation inputs
-  const isEmpty = hasNoItems && activeParentId === null && activeNoteParentId === null;
+  const isEmpty =
+    hasNoItems && activeParentId === null && activeNoteParentId === null;
 
   // Root folder drop handling
   const isRootDropTarget = dropTarget === rootFolder.id;
@@ -269,7 +289,8 @@ export const VirtualizedTree = ({
     (draggedItem.type === "note"
       ? !notes.some((n) => n.id === draggedItem.id)
       : !folders.some((f) => f.id === draggedItem.id));
-  const canAcceptDrop = isDragging && draggedItem && draggedItem.id !== rootFolder.id;
+  const canAcceptDrop =
+    isDragging && draggedItem && draggedItem.id !== rootFolder.id;
 
   const handleRootDragOver = (e: React.DragEvent) => {
     if (!canAcceptDrop) return;
@@ -489,11 +510,15 @@ const FolderRow = ({
   const isBeingDragged = draggedItem?.id === node.id;
   const isDropTarget = dropTarget === node.id;
 
-  const { folders: childFolders, notes: childNotes } = sortFolderItems(node.folder);
+  const { folders: childFolders, notes: childNotes } = sortFolderItems(
+    node.folder,
+  );
   const isAlreadyInFolder =
     draggedItem &&
-    ((draggedItem.type === "note" && childNotes.some((n) => n.id === draggedItem.id)) ||
-      (draggedItem.type === "folder" && childFolders.some((f) => f.id === draggedItem.id)));
+    ((draggedItem.type === "note" &&
+      childNotes.some((n) => n.id === draggedItem.id)) ||
+      (draggedItem.type === "folder" &&
+        childFolders.some((f) => f.id === draggedItem.id)));
 
   const showDropIndicator = isDropTarget && !isAlreadyInFolder;
   const canAcceptDrop = isDragging && draggedItem && draggedItem.id !== node.id;
@@ -571,7 +596,9 @@ const FolderRow = ({
               size={SIDEBAR_BTN_SIZE}
               variant={renaming ? "input" : "default"}
             >
-              <TbChevronRight className={`transition-transform ${open ? "rotate-90" : ""}`} />
+              <TbChevronRight
+                className={`transition-transform ${open ? "rotate-90" : ""}`}
+              />
               {renaming ? (
                 <input
                   className="w-full bg-transparent focus-visible:outline-none"
@@ -581,7 +608,11 @@ const FolderRow = ({
                     if (e.key === "Enter") {
                       e.preventDefault();
                       e.stopPropagation();
-                      if (!trimmedRename || isDuplicateRename || trimmedRename === node.name)
+                      if (
+                        !trimmedRename ||
+                        isDuplicateRename ||
+                        trimmedRename === node.name
+                      )
                         return;
                       renameFolderOptimistic(node.id, trimmedRename);
                       setRenaming(false);
@@ -598,7 +629,12 @@ const FolderRow = ({
               )}
             </SidebarMenuButton>
           </PopoverTrigger>
-          <PopoverContent align="start" className="w-64 p-3" side="right" sideOffset={6}>
+          <PopoverContent
+            align="start"
+            className="w-64 p-3"
+            side="right"
+            sideOffset={6}
+          >
             <div className="space-y-2">
               <p className="text-sm font-medium">Name already exists</p>
               <p className="text-xs text-muted-foreground">
@@ -721,8 +757,12 @@ const NoteRow = ({
 
   const isMobileViewport = useIsMobile(768);
   const popoverSide = isMobileViewport ? "top" : "right";
-  const popoverAlign: "start" | "center" = isMobileViewport ? "center" : "start";
-  const popoverWidthClass = isMobileViewport ? "w-(--radix-popover-trigger-width)" : "w-64";
+  const popoverAlign: "start" | "center" = isMobileViewport
+    ? "center"
+    : "start";
+  const popoverWidthClass = isMobileViewport
+    ? "w-(--radix-popover-trigger-width)"
+    : "w-64";
 
   const isBeingDragged = draggedItem?.id === node.id;
 
@@ -763,7 +803,8 @@ const NoteRow = ({
                     if (e.key === "Enter") {
                       e.preventDefault();
                       e.stopPropagation();
-                      if (!trimmed || isDuplicate || trimmed === node.title) return;
+                      if (!trimmed || isDuplicate || trimmed === node.title)
+                        return;
                       renameNoteOptimistic(node.id, trimmed);
                       setRenaming(false);
                     } else if (e.key === "Escape") {
@@ -791,6 +832,8 @@ const NoteRow = ({
                 size={SIDEBAR_BTN_SIZE}
               >
                 <div
+                  // oxlint-disable-next-line jsx_a11y/prefer-tag-over-role
+                  role="button"
                   onClick={async (e) => {
                     if (pending) e.preventDefault();
                     await navigate({
@@ -867,7 +910,10 @@ const NoteRow = ({
                 <span>Open</span>
               </DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem disabled={pending} onSelect={() => copyNoteOptimistic(node.id)}>
+              <DropdownMenuItem
+                disabled={pending}
+                onSelect={() => copyNoteOptimistic(node.id)}
+              >
                 <TbFiles className="text-muted-foreground" />
                 <span>Make a copy</span>
               </DropdownMenuItem>
@@ -918,8 +964,12 @@ const FolderInputRow = ({
 
   const isMobileViewport = useIsMobile(768);
   const popoverSide = isMobileViewport ? "top" : "right";
-  const popoverAlign: "start" | "center" = isMobileViewport ? "center" : "start";
-  const popoverWidthClass = isMobileViewport ? "w-(--radix-popover-trigger-width)" : "w-64";
+  const popoverAlign: "start" | "center" = isMobileViewport
+    ? "center"
+    : "start";
+  const popoverWidthClass = isMobileViewport
+    ? "w-(--radix-popover-trigger-width)"
+    : "w-64";
 
   const trimmed = name.trim();
   const isDuplicate = trimmed.length > 0 && node.siblingNames.includes(trimmed);
@@ -974,7 +1024,8 @@ const FolderInputRow = ({
             <div className="space-y-2">
               <p className="text-sm font-medium">Title already exists</p>
               <p className="text-xs text-muted-foreground">
-                Another folder here already has this title. Enter a different one.
+                Another folder here already has this title. Enter a different
+                one.
               </p>
             </div>
           </PopoverContent>
@@ -1008,11 +1059,16 @@ const NoteInputRow = ({
 
   const isMobileViewport = useIsMobile(768);
   const popoverSide = isMobileViewport ? "top" : "right";
-  const popoverAlign: "start" | "center" = isMobileViewport ? "center" : "start";
-  const popoverWidthClass = isMobileViewport ? "w-(--radix-popover-trigger-width)" : "w-64";
+  const popoverAlign: "start" | "center" = isMobileViewport
+    ? "center"
+    : "start";
+  const popoverWidthClass = isMobileViewport
+    ? "w-(--radix-popover-trigger-width)"
+    : "w-64";
 
   const trimmed = title.trim();
-  const isDuplicate = trimmed.length > 0 && node.siblingTitles.includes(trimmed);
+  const isDuplicate =
+    trimmed.length > 0 && node.siblingTitles.includes(trimmed);
 
   usePersistentFocus(inputRef, {
     enabled: !createNotePending,

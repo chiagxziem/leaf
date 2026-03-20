@@ -62,8 +62,14 @@ function SignInPage() {
         </div>
 
         <div className="flex flex-col gap-4">
-          <Button disabled={buttonState === "loading"} onClick={handleGoogleSignIn} type="button">
-            {buttonState === "loading" ? "Signing in..." : "Sign in with Google"}
+          <Button
+            disabled={buttonState === "loading"}
+            onClick={handleGoogleSignIn}
+            type="button"
+          >
+            {buttonState === "loading"
+              ? "Signing in..."
+              : "Sign in with Google"}
           </Button>
         </div>
       </div>

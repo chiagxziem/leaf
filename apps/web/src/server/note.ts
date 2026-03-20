@@ -1,14 +1,15 @@
-import type { ApiSuccessResponse } from "@/lib/types";
-import type { Note } from "@repo/db/schemas/note.schema";
-import type { DecryptedNote } from "@repo/db/validators/note.validator";
 import { queryOptions } from "@tanstack/react-query";
 import { createServerFn } from "@tanstack/react-start";
 import { isAxiosError } from "axios";
 import { gzip } from "pako";
 import { z } from "zod";
 
+import type { Note } from "@repo/db/schemas/note.schema";
+import type { DecryptedNote } from "@repo/db/validators/note.validator";
+
 import { axiosClient, axiosErrMsg } from "@/lib/axios";
 import { queryKeys } from "@/lib/query";
+import type { ApiSuccessResponse } from "@/lib/types";
 import { headersMiddleware } from "@/middleware/headers-middleware";
 import { $getFolder } from "@/server/folder";
 
@@ -72,10 +73,13 @@ export const $getSingleNote = createServerFn()
     }
 
     try {
-      const res = await axiosClient.get<ApiSuccessResponse<DecryptedNote>>(`/notes/${noteId}`, {
-        headers: context.headers,
-        timeout: 10000,
-      });
+      const res = await axiosClient.get<ApiSuccessResponse<DecryptedNote>>(
+        `/notes/${noteId}`,
+        {
+          headers: context.headers,
+          timeout: 10000,
+        },
+      );
 
       const note = res.data.data;
 
@@ -117,9 +121,13 @@ export const $createNote = createServerFn()
       title: data.title,
     };
 
-    const res = await axiosClient.post<ApiSuccessResponse<Note>>("/notes", payload, {
-      headers: context.headers,
-    });
+    const res = await axiosClient.post<ApiSuccessResponse<Note>>(
+      "/notes",
+      payload,
+      {
+        headers: context.headers,
+      },
+    );
 
     return res.data;
   });
@@ -134,9 +142,12 @@ export const $makeNoteCopy = createServerFn()
     }),
   )
   .handler(async ({ context, data }) => {
-    const res = await axiosClient.get<ApiSuccessResponse<Note>>(`/notes/${data.noteId}/copy`, {
-      headers: context.headers,
-    });
+    const res = await axiosClient.get<ApiSuccessResponse<Note>>(
+      `/notes/${data.noteId}/copy`,
+      {
+        headers: context.headers,
+      },
+    );
 
     return res.data;
   });
@@ -158,9 +169,13 @@ export const $renameNote = createServerFn({
       title: data.title,
     };
 
-    const res = await axiosClient.put<ApiSuccessResponse<Note>>(`/notes/${data.noteId}`, payload, {
-      headers: context.headers,
-    });
+    const res = await axiosClient.put<ApiSuccessResponse<Note>>(
+      `/notes/${data.noteId}`,
+      payload,
+      {
+        headers: context.headers,
+      },
+    );
 
     return res.data;
   });
@@ -214,9 +229,13 @@ export const $updateNoteContent = createServerFn({
       }
     }
 
-    const res = await axiosClient.put<ApiSuccessResponse<Note>>(`/notes/${data.noteId}`, payload, {
-      headers: context.headers,
-    });
+    const res = await axiosClient.put<ApiSuccessResponse<Note>>(
+      `/notes/${data.noteId}`,
+      payload,
+      {
+        headers: context.headers,
+      },
+    );
 
     return res.data;
   });
@@ -259,7 +278,10 @@ export const $deleteNote = createServerFn()
     }),
   )
   .handler(async ({ context, data }) => {
-    await axiosClient.delete<ApiSuccessResponse<Note>>(`/notes/${data.noteId}`, {
-      headers: context.headers,
-    });
+    await axiosClient.delete<ApiSuccessResponse<Note>>(
+      `/notes/${data.noteId}`,
+      {
+        headers: context.headers,
+      },
+    );
   });

@@ -2,8 +2,8 @@
   "name": "@repo/api",
   "type": "module",
   "scripts": {
-    "dev": "bun run --hot src/index.ts",
     "build": "bun build --compile --minify --sourcemap src/index.ts --outfile api-exe",
+    "dev": "bun run --hot src/index.ts",
     "start": "./api-exe"
   },
   "dependencies": {

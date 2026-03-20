@@ -11,7 +11,10 @@ export type TreeNode = {
 };
 
 // Convert your folder structure to tree nodes
-export function folderToTreeNodes(folder: FolderWithItems, parentId?: string): TreeNode {
+export function folderToTreeNodes(
+  folder: FolderWithItems,
+  parentId?: string,
+): TreeNode {
   return {
     id: folder.id,
     type: "folder",

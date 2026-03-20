@@ -3,7 +3,10 @@ import type { ComponentProps } from "react";
 
 import { cn } from "@/lib/utils";
 
-const BrandLink = ({ className, ...props }: LinkProps & ComponentProps<"a">) => {
+const BrandLink = ({
+  className,
+  ...props
+}: LinkProps & ComponentProps<"a">) => {
   return (
     <Link
       className={cn(

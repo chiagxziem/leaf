@@ -22,7 +22,12 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
 
@@ -254,7 +259,11 @@ const Sidebar = ({
   );
 };
 
-function SidebarTrigger({ className, onClick, ...props }: ComponentProps<typeof Button>) {
+function SidebarTrigger({
+  className,
+  onClick,
+  ...props
+}: ComponentProps<typeof Button>) {
   const { toggleSidebar } = useSidebar();
 
   return (
@@ -348,7 +357,10 @@ function SidebarFooter({ className, ...props }: ComponentProps<"div">) {
   );
 }
 
-function SidebarSeparator({ className, ...props }: ComponentProps<typeof Separator>) {
+function SidebarSeparator({
+  className,
+  ...props
+}: ComponentProps<typeof Separator>) {
   return (
     <Separator
       className={cn("mx-2 w-auto bg-sidebar-border", className)}
@@ -605,7 +617,12 @@ function SidebarMenuSkeleton({
       data-slot="sidebar-menu-skeleton"
       {...props}
     >
-      {showIcon && <Skeleton className="size-4 rounded-md" data-sidebar="menu-skeleton-icon" />}
+      {showIcon && (
+        <Skeleton
+          className="size-4 rounded-md"
+          data-sidebar="menu-skeleton-icon"
+        />
+      )}
       <Skeleton
         className="h-4 max-w-(--skeleton-width) flex-1"
         data-sidebar="menu-skeleton-text"

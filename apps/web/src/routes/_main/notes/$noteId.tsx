@@ -1,5 +1,3 @@
-import type { FolderWithItems } from "@repo/db/validators/folder.validator";
-import type { DecryptedNote } from "@repo/db/validators/note.validator";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute, redirect, useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
@@ -60,6 +58,9 @@ import {
 import { toast } from "sonner";
 import { z } from "zod";
 
+import type { FolderWithItems } from "@repo/db/validators/folder.validator";
+import type { DecryptedNote } from "@repo/db/validators/note.validator";
+
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -73,12 +74,20 @@ import {
   InputGroupButton,
   InputGroupInput,
 } from "@/components/ui/input-group";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { Separator } from "@/components/ui/separator";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Spinner } from "@/components/ui/spinner";
 import { cancelToastEl } from "@/components/ui/toaster";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { useIsIOS } from "@/hooks/use-is-ios";
 import { apiErrorHandler } from "@/lib/handle-api-error";
 import { queryKeys } from "@/lib/query";
@@ -102,9 +111,12 @@ export const Route = createFileRoute("/_main/notes/$noteId")({
       return;
     }
 
-    const note = await context.queryClient.ensureQueryData(singleNoteQueryOptions(params.noteId));
+    const note = await context.queryClient.ensureQueryData(
+      singleNoteQueryOptions(params.noteId),
+    );
 
-    const rootFolder = await context.queryClient.ensureQueryData(folderQueryOptions);
+    const rootFolder =
+      await context.queryClient.ensureQueryData(folderQueryOptions);
 
     if (!note) {
       if (rootFolder) {
@@ -126,7 +138,9 @@ export const Route = createFileRoute("/_main/notes/$noteId")({
     return { note };
   },
   loader: async ({ params, context }) => {
-    const note = await context.queryClient.ensureQueryData(singleNoteQueryOptions(params.noteId));
+    const note = await context.queryClient.ensureQueryData(
+      singleNoteQueryOptions(params.noteId),
+    );
 
     return { noteId: params.noteId, note };
   },
@@ -165,7 +179,14 @@ function NotePage() {
   // Merge title/content states into a single "Note" state for the header
   // Precedence: error > offline > saving > dirty > savedRecently > idle
   const noteState: SyncState = (() => {
-    const order: SyncState[] = ["error", "offline", "saving", "dirty", "savedRecently", "idle"];
+    const order: SyncState[] = [
+      "error",
+      "offline",
+      "saving",
+      "dirty",
+      "savedRecently",
+      "idle",
+    ];
 
     const has = (s: SyncState) => titleState === s || contentState === s;
 
@@ -316,7 +337,9 @@ const NoteView = ({
   // Read the latest title from the cache to avoid overwriting a rename
   // that may have landed since the NoteView was rendered
   const getCurrentTitle = () => {
-    const cached = queryClient.getQueryData<DecryptedNote>(queryKeys.note(note.id));
+    const cached = queryClient.getQueryData<DecryptedNote>(
+      queryKeys.note(note.id),
+    );
     return cached?.title ?? note.title;
   };
 
@@ -381,13 +404,18 @@ const NoteView = ({
       );
 
       // Sidebar ordering depends on updatedAt, so refresh the folder tree
-      await queryClient.invalidateQueries({ queryKey: folderQueryOptions.queryKey });
+      await queryClient.invalidateQueries({
+        queryKey: folderQueryOptions.queryKey,
+      });
 
       setContentDirty(false);
     },
     onError: () => {
       setContentState("error");
-      toast.error("Failed to save content. Check your connection and try again.", cancelToastEl);
+      toast.error(
+        "Failed to save content. Check your connection and try again.",
+        cancelToastEl,
+      );
     },
   });
 
@@ -399,7 +427,9 @@ const NoteView = ({
       if (!contentDirty) return;
 
       const html = editor.getHTML();
-      const cached = queryClient.getQueryData<DecryptedNote>(queryKeys.note(note.id));
+      const cached = queryClient.getQueryData<DecryptedNote>(
+        queryKeys.note(note.id),
+      );
 
       if (html !== (cached?.content ?? note.content)) {
         saveContent(html);
@@ -419,12 +449,21 @@ const NoteView = ({
   useEffect(() => {
     if (!contentDirty) return;
 
-    const cached = queryClient.getQueryData<DecryptedNote>(queryKeys.note(note.id));
+    const cached = queryClient.getQueryData<DecryptedNote>(
+      queryKeys.note(note.id),
+    );
     const lastSaved = cached?.content ?? note.content;
     if (debouncedContent !== lastSaved) {
       saveContent(debouncedContent);
     }
-  }, [debouncedContent, contentDirty, note.id, note.content, queryClient, saveContent]);
+  }, [
+    debouncedContent,
+    contentDirty,
+    note.id,
+    note.content,
+    queryClient,
+    saveContent,
+  ]);
 
   // Toggle editor editability when mode changes
   useEffect(() => {
@@ -480,7 +519,11 @@ const NoteView = ({
         titleRef={titleRef}
       />
       {isIOS === true && (
-        <NoteToolbar editor={editor} isEditing={isEditing} className="sticky top-10 border-y" />
+        <NoteToolbar
+          editor={editor}
+          isEditing={isEditing}
+          className="sticky top-10 border-y"
+        />
       )}
       <div className="flex flex-1 overflow-auto pt-4">
         <div className="container flex min-h-0 flex-1">
@@ -610,7 +653,12 @@ const NoteToolbar = ({
     if (!isValidUrl) return;
 
     // Set link with the URL
-    editor.chain().focus().extendMarkRange("link").setLink({ href: linkUrl.trim() }).run();
+    editor
+      .chain()
+      .focus()
+      .extendMarkRange("link")
+      .setLink({ href: linkUrl.trim() })
+      .run();
 
     setLinkPopoverOpen(false);
     setLinkUrl("");
@@ -643,7 +691,9 @@ const NoteToolbar = ({
 
   const ActiveListIcon = getActiveListIcon();
   const isAnyListActive =
-    editor.isActive("bulletList") || editor.isActive("orderedList") || editor.isActive("taskList");
+    editor.isActive("bulletList") ||
+    editor.isActive("orderedList") ||
+    editor.isActive("taskList");
 
   const ActiveHeadingIcon = getActiveHeadingIcon();
   const isAnyHeadingActive = editor.isActive("heading");
@@ -685,12 +735,18 @@ const NoteToolbar = ({
         </Tooltip>
       </div>
 
-      <Separator className="data-[orientation=vertical]:h-6" orientation="vertical" />
+      <Separator
+        className="data-[orientation=vertical]:h-6"
+        orientation="vertical"
+      />
 
       <div className="flex items-center justify-center gap-1">
         <Tooltip>
           <TooltipTrigger asChild>
-            <DropdownMenu onOpenChange={setHeadingDropdownOpen} open={headingDropdownOpen}>
+            <DropdownMenu
+              onOpenChange={setHeadingDropdownOpen}
+              open={headingDropdownOpen}
+            >
               <DropdownMenuTrigger asChild>
                 <Button
                   className="w-auto min-w-8 px-1.5"
@@ -942,12 +998,18 @@ const NoteToolbar = ({
         </Tooltip>
       </div>
 
-      <Separator className="data-[orientation=vertical]:h-6" orientation="vertical" />
+      <Separator
+        className="data-[orientation=vertical]:h-6"
+        orientation="vertical"
+      />
 
       <div className="flex items-center justify-center gap-1">
         <Tooltip>
           <TooltipTrigger asChild>
-            <DropdownMenu onOpenChange={setListDropdownOpen} open={listDropdownOpen}>
+            <DropdownMenu
+              onOpenChange={setListDropdownOpen}
+              open={listDropdownOpen}
+            >
               <DropdownMenuTrigger asChild>
                 <Button
                   className="w-auto min-w-8 px-1.5"
@@ -978,7 +1040,10 @@ const NoteToolbar = ({
                   <TbList className="text-muted-foreground" />
                   <span>Bullet List</span>
                   <TbCheck
-                    className={cn("ml-auto size-4", !editor.isActive("bulletList") && "invisible")}
+                    className={cn(
+                      "ml-auto size-4",
+                      !editor.isActive("bulletList") && "invisible",
+                    )}
                   />
                 </DropdownMenuItem>
                 <DropdownMenuItem
@@ -989,7 +1054,10 @@ const NoteToolbar = ({
                   <TbListNumbers className="text-muted-foreground" />
                   <span>Ordered List</span>
                   <TbCheck
-                    className={cn("ml-auto size-4", !editor.isActive("orderedList") && "invisible")}
+                    className={cn(
+                      "ml-auto size-4",
+                      !editor.isActive("orderedList") && "invisible",
+                    )}
                   />
                 </DropdownMenuItem>
                 <DropdownMenuItem
@@ -1000,7 +1068,10 @@ const NoteToolbar = ({
                   <TbListCheck className="text-muted-foreground" />
                   <span>Task List</span>
                   <TbCheck
-                    className={cn("ml-auto size-4", !editor.isActive("taskList") && "invisible")}
+                    className={cn(
+                      "ml-auto size-4",
+                      !editor.isActive("taskList") && "invisible",
+                    )}
                   />
                 </DropdownMenuItem>
               </DropdownMenuContent>
@@ -1050,7 +1121,10 @@ const NoteToolbar = ({
         </Tooltip>
       </div>
 
-      <Separator className="data-[orientation=vertical]:h-6" orientation="vertical" />
+      <Separator
+        className="data-[orientation=vertical]:h-6"
+        orientation="vertical"
+      />
 
       <div className="flex items-center justify-center gap-1">
         <Tooltip>
@@ -1145,7 +1219,8 @@ const TitleTextarea = ({
   // We still patch the local note cache on success to keep the UI consistent without refetch
   const { mutate: saveTitle } = useMutation({
     mutationKey: ["rename-note-inline", noteId],
-    mutationFn: async (newTitle: string) => renameNote({ data: { noteId, title: newTitle } }),
+    mutationFn: async (newTitle: string) =>
+      renameNote({ data: { noteId, title: newTitle } }),
     onMutate: () => {
       // Bump sequence; any earlier response becomes stale
       const seq = ++titleSeqRef.current;
@@ -1166,13 +1241,18 @@ const TitleTextarea = ({
       );
 
       // Sidebar needs updatedAt to re-sort items
-      await queryClient.invalidateQueries({ queryKey: folderQueryOptions.queryKey });
+      await queryClient.invalidateQueries({
+        queryKey: folderQueryOptions.queryKey,
+      });
 
       setDirty(false);
     },
     onError: () => {
       onStatusChange("error");
-      toast.error("Failed to rename note. Check your connection and try again.", cancelToastEl);
+      toast.error(
+        "Failed to rename note. Check your connection and try again.",
+        cancelToastEl,
+      );
     },
   });
 
@@ -1251,7 +1331,13 @@ const TitleTextarea = ({
           if (dirty) onStatusChange("saving");
           flushIfChanged();
           onEnter();
-        } else if (e.key === "ArrowDown" && !e.shiftKey && !e.altKey && !e.metaKey && !e.ctrlKey) {
+        } else if (
+          e.key === "ArrowDown" &&
+          !e.shiftKey &&
+          !e.altKey &&
+          !e.metaKey &&
+          !e.ctrlKey
+        ) {
           e.preventDefault();
           if (dirty) onStatusChange("saving");
           flushIfChanged();
@@ -1272,7 +1358,11 @@ const clone = (node: FolderWithItems): FolderWithItems => ({
   notes: [...node.notes],
 });
 
-const NotePageDropdown = ({ titleRef }: { titleRef: RefObject<HTMLTextAreaElement | null> }) => {
+const NotePageDropdown = ({
+  titleRef,
+}: {
+  titleRef: RefObject<HTMLTextAreaElement | null>;
+}) => {
   const { noteId } = Route.useLoaderData();
   const navigate = useNavigate();
   const { queryClient } = Route.useRouteContext();
@@ -1303,7 +1393,10 @@ const NotePageDropdown = ({ titleRef }: { titleRef: RefObject<HTMLTextAreaElemen
       const removeNote = (node: FolderWithItems): boolean => {
         const idx = node.notes.findIndex((n) => n.id === noteId);
         if (idx !== -1) {
-          node.notes = [...node.notes.slice(0, idx), ...node.notes.slice(idx + 1)];
+          node.notes = [
+            ...node.notes.slice(0, idx),
+            ...node.notes.slice(idx + 1),
+          ];
           removed = true;
           return true;
         }
@@ -1320,7 +1413,10 @@ const NotePageDropdown = ({ titleRef }: { titleRef: RefObject<HTMLTextAreaElemen
       // Navigate away to most recent note or home
       const mostRecent = getMostRecentlyUpdatedNote(draft);
       if (mostRecent) {
-        await navigate({ to: "/notes/$noteId", params: { noteId: mostRecent.id } });
+        await navigate({
+          to: "/notes/$noteId",
+          params: { noteId: mostRecent.id },
+        });
       } else {
         await navigate({ to: "/" });
       }
@@ -1374,11 +1470,26 @@ const NotePageDropdown = ({ titleRef }: { titleRef: RefObject<HTMLTextAreaElemen
 
 // Used to show sync state between the server and the local versions of the note.
 // "savedRecently" is used briefly after success to provide visual feedback
-type SyncState = "idle" | "dirty" | "saving" | "error" | "offline" | "savedRecently";
+type SyncState =
+  | "idle"
+  | "dirty"
+  | "saving"
+  | "error"
+  | "offline"
+  | "savedRecently";
 
-function StatusIcon({ state, labelPrefix }: { state: SyncState; labelPrefix: string }) {
+function StatusIcon({
+  state,
+  labelPrefix,
+}: {
+  state: SyncState;
+  labelPrefix: string;
+}) {
   const common = "size-4";
-  const map: Record<SyncState, { icon: React.ReactNode; label: string; className?: string }> = {
+  const map: Record<
+    SyncState,
+    { icon: React.ReactNode; label: string; className?: string }
+  > = {
     idle: {
       icon: <TbCheck className={common} />,
       label: "Synced",

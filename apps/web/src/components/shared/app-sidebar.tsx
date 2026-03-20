@@ -1,6 +1,3 @@
-import type { Theme } from "@/lib/types";
-import type { User } from "@repo/db/schemas/auth.schema";
-import type { FolderWithItems } from "@repo/db/validators/folder.validator";
 import { useQuery } from "@tanstack/react-query";
 import { getRouteApi, useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
@@ -20,11 +17,15 @@ import {
 } from "react-icons/tb";
 import { toast } from "sonner";
 
+import type { User } from "@repo/db/schemas/auth.schema";
+import type { FolderWithItems } from "@repo/db/validators/folder.validator";
+
 import { useFolderMutations } from "@/hooks/use-folder-mutations";
 import { useNoteMutations } from "@/hooks/use-note-mutations";
 import { useTreeDnD } from "@/hooks/use-tree-dnd";
 import { authClient } from "@/lib/auth-client";
 import { queryKeys } from "@/lib/query";
+import type { Theme } from "@/lib/types";
 import {
   countFolderStats,
   findLatestNoteFolderPath,
@@ -70,7 +71,10 @@ const isDescendant = (node: FolderWithItems, targetId: string): boolean => {
   return node.folders.some((f) => isDescendant(f, targetId));
 };
 
-const findFolder = (node: FolderWithItems, fId: string): FolderWithItems | null => {
+const findFolder = (
+  node: FolderWithItems,
+  fId: string,
+): FolderWithItems | null => {
   if (node.id === fId) return node;
   for (const f of node.folders) {
     const found = findFolder(f, fId);
@@ -86,7 +90,9 @@ export const AppSidebar = ({ user }: { user: User }) => {
   const navigate = useNavigate();
 
   const [activeParentId, setActiveParentId] = useState<string | null>(null);
-  const [activeNoteParentId, setActiveNoteParentId] = useState<string | null>(null);
+  const [activeNoteParentId, setActiveNoteParentId] = useState<string | null>(
+    null,
+  );
 
   const { isMobile } = useSidebar();
   const { setTheme, theme } = useTheme();
@@ -100,12 +106,17 @@ export const AppSidebar = ({ user }: { user: User }) => {
 
   // Initial open folder ids (depends on the most recently updated note)
   const initialOpenFolderIds = useMemo(
-    () => (rootFolder ? new Set(findLatestNoteFolderPath(rootFolder)) : new Set<string>()),
+    () =>
+      rootFolder
+        ? new Set(findLatestNoteFolderPath(rootFolder))
+        : new Set<string>(),
     [rootFolder],
   );
 
   // Controlled folder open state
-  const [openFolderIds, setOpenFolderIds] = useState<Set<string>>(() => initialOpenFolderIds);
+  const [openFolderIds, setOpenFolderIds] = useState<Set<string>>(
+    () => initialOpenFolderIds,
+  );
 
   // useEffect to update openFolderIds when rootFolder changes
   useEffect(() => {
@@ -249,7 +260,11 @@ export const AppSidebar = ({ user }: { user: User }) => {
       <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>
-            <SidebarMenuButton asChild className="h-auto rounded-2xl" size={"lg"}>
+            <SidebarMenuButton
+              asChild
+              className="h-auto rounded-2xl"
+              size={"lg"}
+            >
               <div className="flex items-center gap-3 text-lg font-medium">
                 <div className="size-10">
                   <Image
@@ -281,7 +296,10 @@ export const AppSidebar = ({ user }: { user: User }) => {
             <SidebarMenu>
               {actions.map((action) => (
                 <SidebarMenuItem key={action.title}>
-                  <SidebarMenuButton onClick={action.onClick} size={SIDEBAR_BTN_SIZE}>
+                  <SidebarMenuButton
+                    onClick={action.onClick}
+                    size={SIDEBAR_BTN_SIZE}
+                  >
                     <action.icon />
                     <span>{action.title}</span>
                   </SidebarMenuButton>
@@ -342,7 +360,10 @@ export const AppSidebar = ({ user }: { user: User }) => {
                   size="lg"
                 >
                   <Avatar className="size-10 rounded-lg">
-                    <AvatarImage alt={user.name} src={user.image || undefined} />
+                    <AvatarImage
+                      alt={user.name}
+                      src={user.image || undefined}
+                    />
                     <AvatarFallback className="rounded-lg">
                       {initialsFromName(user.name)}
                     </AvatarFallback>
@@ -365,13 +386,18 @@ export const AppSidebar = ({ user }: { user: User }) => {
                 <DropdownMenuLabel className="p-0 font-normal">
                   <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
                     <Avatar className="size-10 rounded-lg">
-                      <AvatarImage alt={user.name} src={user.image || undefined} />
+                      <AvatarImage
+                        alt={user.name}
+                        src={user.image || undefined}
+                      />
                       <AvatarFallback className="rounded-lg">
                         {initialsFromName(user.name)}
                       </AvatarFallback>
                     </Avatar>
                     <div className="grid flex-1 text-left text-sm leading-tight">
-                      <span className="truncate font-semibold">{user.name}</span>
+                      <span className="truncate font-semibold">
+                        {user.name}
+                      </span>
                       <span className="truncate text-xs text-muted-foreground">
                         {maskEmail(user.email)}
                       </span>
@@ -396,7 +422,9 @@ export const AppSidebar = ({ user }: { user: User }) => {
                           onSelect={() => setTheme(uiTheme.value as Theme)}
                         >
                           <uiTheme.icon />
-                          <span className="max-[480px]:hidden">{uiTheme.label}</span>
+                          <span className="max-[480px]:hidden">
+                            {uiTheme.label}
+                          </span>
                         </DropdownMenuCheckboxItem>
                       ))}
                     </DropdownMenuSubContent>

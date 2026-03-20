@@ -1,11 +1,10 @@
 import { randomUUID } from "node:crypto";
 
+import { db, sql } from "@repo/db";
 import type { Folder } from "@repo/db/schemas/folder.schema";
+import { folder } from "@repo/db/schemas/folder.schema";
 import type { Note } from "@repo/db/schemas/note.schema";
 import type { FolderWithItems } from "@repo/db/validators/folder.validator";
-
-import { db, sql } from "@repo/db";
-import { folder } from "@repo/db/schemas/folder.schema";
 
 import { getUserById } from "./user-queries";
 
@@ -18,7 +17,8 @@ export const createRootFolder = async (userId: string) => {
 
   if (user) {
     const existingRoot = await db.query.folder.findFirst({
-      where: (folder, { and, eq }) => and(eq(folder.userId, user.id), eq(folder.isRoot, true)),
+      where: (folder, { and, eq }) =>
+        and(eq(folder.userId, user.id), eq(folder.isRoot, true)),
     });
 
     if (existingRoot) {
@@ -53,7 +53,11 @@ export const getFolderForUser = async (
 ): Promise<Folder | undefined> => {
   const foundFolder = await db.query.folder.findFirst({
     where: (folder, { and, eq, isNull }) =>
-      and(eq(folder.id, folderId), eq(folder.userId, userId), isNull(folder.deletedAt)),
+      and(
+        eq(folder.id, folderId),
+        eq(folder.userId, userId),
+        isNull(folder.deletedAt),
+      ),
   });
 
   return foundFolder;
@@ -175,7 +179,8 @@ export const getFolderWithNestedItems = async (
 
   // Get ALL non-deleted notes for the user
   const allNotes = await db.query.note.findMany({
-    where: (note, { and, eq, isNull }) => and(eq(note.userId, userId), isNull(note.deletedAt)),
+    where: (note, { and, eq, isNull }) =>
+      and(eq(note.userId, userId), isNull(note.deletedAt)),
   });
 
   // Build the hierarchy starting from the requested folder
@@ -190,7 +195,8 @@ export const getRootFolderWithNestedItems = async (
 ): Promise<FolderWithItems | null> => {
   // Find the root folder for the user
   const rootFolder = await db.query.folder.findFirst({
-    where: (folder, { and, eq }) => and(eq(folder.userId, userId), eq(folder.isRoot, true)),
+    where: (folder, { and, eq }) =>
+      and(eq(folder.userId, userId), eq(folder.isRoot, true)),
   });
 
   if (!rootFolder) {
@@ -227,7 +233,11 @@ export const getFolderChildren = async (
   // Verify the folder exists and belongs to the user
   const parentFolder = await db.query.folder.findFirst({
     where: (folder, { and, eq, isNull }) =>
-      and(eq(folder.id, folderId), eq(folder.userId, userId), isNull(folder.deletedAt)),
+      and(
+        eq(folder.id, folderId),
+        eq(folder.userId, userId),
+        isNull(folder.deletedAt),
+      ),
   });
 
   if (!parentFolder) {
@@ -237,14 +247,22 @@ export const getFolderChildren = async (
   // Get direct child folders (not soft-deleted)
   const childFolders = await db.query.folder.findMany({
     where: (folder, { and, eq, isNull }) =>
-      and(eq(folder.userId, userId), eq(folder.parentFolderId, folderId), isNull(folder.deletedAt)),
+      and(
+        eq(folder.userId, userId),
+        eq(folder.parentFolderId, folderId),
+        isNull(folder.deletedAt),
+      ),
     orderBy: (folder, { asc }) => [asc(folder.name)],
   });
 
   // Get direct notes in this folder (not soft-deleted)
   const notes = await db.query.note.findMany({
     where: (note, { and, eq, isNull }) =>
-      and(eq(note.userId, userId), eq(note.folderId, folderId), isNull(note.deletedAt)),
+      and(
+        eq(note.userId, userId),
+        eq(note.folderId, folderId),
+        isNull(note.deletedAt),
+      ),
     columns: {
       id: true,
       title: true,
@@ -279,11 +297,18 @@ export const getFolderChildren = async (
  * Checks if a folder has any direct children (folders or notes).
  * Used to determine if the expand arrow should be shown.
  */
-const hasDescendants = async (folderId: string, userId: string): Promise<boolean> => {
+const hasDescendants = async (
+  folderId: string,
+  userId: string,
+): Promise<boolean> => {
   // Check for child folders first (more likely)
   const childFolder = await db.query.folder.findFirst({
     where: (folder, { and, eq, isNull }) =>
-      and(eq(folder.parentFolderId, folderId), eq(folder.userId, userId), isNull(folder.deletedAt)),
+      and(
+        eq(folder.parentFolderId, folderId),
+        eq(folder.userId, userId),
+        isNull(folder.deletedAt),
+      ),
     columns: { id: true },
   });
 
@@ -292,7 +317,11 @@ const hasDescendants = async (folderId: string, userId: string): Promise<boolean
   // Check for notes
   const childNote = await db.query.note.findFirst({
     where: (note, { and, eq, isNull }) =>
-      and(eq(note.folderId, folderId), eq(note.userId, userId), isNull(note.deletedAt)),
+      and(
+        eq(note.folderId, folderId),
+        eq(note.userId, userId),
+        isNull(note.deletedAt),
+      ),
     columns: { id: true },
   });
 

@@ -1,8 +1,14 @@
-import type { EncryptedNote } from "@/types";
 import { validator } from "hono-openapi";
 import { streamSSE } from "hono/streaming";
 import { ungzip } from "pako";
 import { z } from "zod";
+
+import { db, eq } from "@repo/db";
+import { type Note, note } from "@repo/db/schemas/note.schema";
+import {
+  NoteInsertSchema,
+  NoteUpdateSchema,
+} from "@repo/db/validators/note.validator";
 
 import { createRouter } from "@/app";
 import { decryptContent, encryptContent } from "@/lib/encryption";
@@ -12,10 +18,11 @@ import { errorResponse, successResponse } from "@/lib/utils";
 import { authed } from "@/middleware/authed";
 import { validationHook } from "@/middleware/validation-hook";
 import { getFolderForUser } from "@/queries/folder-queries";
-import { generateUniqueNoteTitle, getNoteForUser } from "@/queries/note-queries";
-import { db, eq } from "@repo/db";
-import { type Note, note } from "@repo/db/schemas/note.schema";
-import { NoteInsertSchema, NoteUpdateSchema } from "@repo/db/validators/note.validator";
+import {
+  generateUniqueNoteTitle,
+  getNoteForUser,
+} from "@/queries/note-queries";
+import type { EncryptedNote } from "@/types";
 
 import {
   copyNoteDoc,
@@ -104,7 +111,10 @@ noteRouter.get("/", getAllNotesDoc, async (c) => {
   try {
     const notes = await db.query.note.findMany();
 
-    return c.json(successResponse(notes, "All notes retrieved successfully"), HttpStatusCodes.OK);
+    return c.json(
+      successResponse(notes, "All notes retrieved successfully"),
+      HttpStatusCodes.OK,
+    );
   } catch (error) {
     console.error("Error retrieving notes:", error);
     return c.json(
@@ -128,7 +138,10 @@ noteRouter.post(
       const decompressedContent = decompressContent(noteData);
 
       // Check content size limit
-      if (decompressedContent && getByteSize(decompressedContent) > MAX_CONTENT_SIZE_BYTES) {
+      if (
+        decompressedContent &&
+        getByteSize(decompressedContent) > MAX_CONTENT_SIZE_BYTES
+      ) {
         return c.json(
           errorResponse("PAYLOAD_TOO_LARGE", "Note content exceeds 2MB limit"),
           HttpStatusCodes.REQUEST_TOO_LONG,
@@ -138,7 +151,10 @@ noteRouter.post(
       const folder = await getFolderForUser(noteData.folderId, user.id);
 
       if (!folder) {
-        return c.json(errorResponse("NOT_FOUND", "Folder not found"), HttpStatusCodes.NOT_FOUND);
+        return c.json(
+          errorResponse("NOT_FOUND", "Folder not found"),
+          HttpStatusCodes.NOT_FOUND,
+        );
       }
 
       const uniqueTitle = await generateUniqueNoteTitle(
@@ -176,9 +192,16 @@ noteRouter.post(
 
       // Emit realtime update event
       console.log(`[SSE] Emitting note-created for note ${newNote.id}`);
-      noteEvents.emit("data-change", { type: "note", id: newNote.id, userId: user.id });
+      noteEvents.emit("data-change", {
+        type: "note",
+        id: newNote.id,
+        userId: user.id,
+      });
 
-      return c.json(successResponse(newNote, "Note created successfully"), HttpStatusCodes.CREATED);
+      return c.json(
+        successResponse(newNote, "Note created successfully"),
+        HttpStatusCodes.CREATED,
+      );
     } catch (error) {
       console.error("Error creating note:", error);
       return c.json(
@@ -202,7 +225,10 @@ noteRouter.get(
       const foundNote = await getNoteForUser(id, user.id);
 
       if (!foundNote) {
-        return c.json(errorResponse("NOT_FOUND", "Note not found"), HttpStatusCodes.NOT_FOUND);
+        return c.json(
+          errorResponse("NOT_FOUND", "Note not found"),
+          HttpStatusCodes.NOT_FOUND,
+        );
       }
 
       // Generate ETag from updatedAt timestamp
@@ -214,7 +240,10 @@ noteRouter.get(
         return c.body(null, HttpStatusCodes.NOT_MODIFIED);
       }
 
-      const decryptedNote: Omit<Note, "contentEncrypted" | "contentIv" | "contentTag"> & {
+      const decryptedNote: Omit<
+        Note,
+        "contentEncrypted" | "contentIv" | "contentTag"
+      > & {
         content: string;
       } = {
         id: foundNote.id,
@@ -228,7 +257,11 @@ noteRouter.get(
         updatedAt: foundNote.updatedAt,
       };
 
-      if (foundNote.contentEncrypted && foundNote.contentIv && foundNote.contentTag) {
+      if (
+        foundNote.contentEncrypted &&
+        foundNote.contentIv &&
+        foundNote.contentTag
+      ) {
         decryptedNote.content = decryptContent(
           foundNote.contentEncrypted,
           foundNote.contentIv,
@@ -267,7 +300,10 @@ noteRouter.get(
 
       // Check if the note exists
       if (!noteToBeCopied) {
-        return c.json(errorResponse("NOTE_NOT_FOUND", "Note not found"), HttpStatusCodes.NOT_FOUND);
+        return c.json(
+          errorResponse("NOTE_NOT_FOUND", "Note not found"),
+          HttpStatusCodes.NOT_FOUND,
+        );
       }
 
       const uniqueTitle = await generateUniqueNoteTitle(
@@ -302,7 +338,11 @@ noteRouter.get(
 
       // Emit realtime update event
       console.log(`[SSE] Emitting note-copied for note ${copiedNote.id}`);
-      noteEvents.emit("data-change", { type: "note", id: copiedNote.id, userId: user.id });
+      noteEvents.emit("data-change", {
+        type: "note",
+        id: copiedNote.id,
+        userId: user.id,
+      });
 
       return c.json(
         successResponse(copiedNote, "Note copied successfully"),
@@ -339,7 +379,10 @@ noteRouter.patch(
       const foundNote = await getNoteForUser(id, user.id);
 
       if (!foundNote) {
-        return c.json(errorResponse("NOT_FOUND", "Note not found"), HttpStatusCodes.NOT_FOUND);
+        return c.json(
+          errorResponse("NOT_FOUND", "Note not found"),
+          HttpStatusCodes.NOT_FOUND,
+        );
       }
 
       const [updatedNote] = await db
@@ -353,13 +396,19 @@ noteRouter.patch(
       noteEvents.emit("data-change", { type: "note", id: id, userId: user.id });
 
       return c.json(
-        successResponse(updatedNote, "Note favorite state updated successfully"),
+        successResponse(
+          updatedNote,
+          "Note favorite state updated successfully",
+        ),
         HttpStatusCodes.OK,
       );
     } catch (error) {
       console.error("Error updating note favorite state:", error);
       return c.json(
-        errorResponse("INTERNAL_SERVER_ERROR", "Failed to update note favorite state"),
+        errorResponse(
+          "INTERNAL_SERVER_ERROR",
+          "Failed to update note favorite state",
+        ),
         HttpStatusCodes.INTERNAL_SERVER_ERROR,
       );
     }
@@ -387,11 +436,17 @@ noteRouter.patch(
       const foundNote = await getNoteForUser(id, user.id);
 
       if (!foundNote) {
-        return c.json(errorResponse("NOTE_NOT_FOUND", "Note not found"), HttpStatusCodes.NOT_FOUND);
+        return c.json(
+          errorResponse("NOTE_NOT_FOUND", "Note not found"),
+          HttpStatusCodes.NOT_FOUND,
+        );
       }
 
       if (folderId === foundNote.folderId) {
-        return c.json(successResponse(foundNote, "Note moved successfully"), HttpStatusCodes.OK);
+        return c.json(
+          successResponse(foundNote, "Note moved successfully"),
+          HttpStatusCodes.OK,
+        );
       }
 
       const folder = await getFolderForUser(folderId, user.id);
@@ -402,7 +457,11 @@ noteRouter.patch(
         );
       }
 
-      const uniqueTitle = await generateUniqueNoteTitle(foundNote.title, user.id, folderId);
+      const uniqueTitle = await generateUniqueNoteTitle(
+        foundNote.title,
+        user.id,
+        folderId,
+      );
 
       const [updatedNote] = await db
         .update(note)
@@ -414,9 +473,16 @@ noteRouter.patch(
       console.log(`[SSE] Emitting note-moved for note ${id}`);
       noteEvents.emit("data-change", { type: "note", id: id, userId: user.id });
       // Also notify that folder content changed
-      noteEvents.emit("data-change", { type: "folder", id: folderId, userId: user.id });
+      noteEvents.emit("data-change", {
+        type: "folder",
+        id: folderId,
+        userId: user.id,
+      });
 
-      return c.json(successResponse(updatedNote, "Note moved successfully"), HttpStatusCodes.OK);
+      return c.json(
+        successResponse(updatedNote, "Note moved successfully"),
+        HttpStatusCodes.OK,
+      );
     } catch (error) {
       console.error("Error moving note:", error);
       return c.json(
@@ -442,7 +508,10 @@ noteRouter.put(
       const foundNote = await getNoteForUser(id, user.id);
 
       if (!foundNote) {
-        return c.json(errorResponse("NOTE_NOT_FOUND", "Note not found"), HttpStatusCodes.NOT_FOUND);
+        return c.json(
+          errorResponse("NOTE_NOT_FOUND", "Note not found"),
+          HttpStatusCodes.NOT_FOUND,
+        );
       }
 
       // Check If-Match header for optimistic locking (prevents conflicts)
@@ -517,7 +586,10 @@ noteRouter.put(
         .where(eq(note.id, id))
         .returning();
 
-      const decryptedUpdatedNote: Omit<Note, "contentEncrypted" | "contentIv" | "contentTag"> & {
+      const decryptedUpdatedNote: Omit<
+        Note,
+        "contentEncrypted" | "contentIv" | "contentTag"
+      > & {
         content: string;
       } = {
         id: updatedNote.id,
@@ -565,7 +637,10 @@ noteRouter.delete(
       const foundNote = await getNoteForUser(id, user.id);
 
       if (!foundNote) {
-        return c.json(errorResponse("NOTE_NOT_FOUND", "Note not found"), HttpStatusCodes.NOT_FOUND);
+        return c.json(
+          errorResponse("NOTE_NOT_FOUND", "Note not found"),
+          HttpStatusCodes.NOT_FOUND,
+        );
       }
 
       // Soft delete: set deletedAt timestamp instead of hard delete
@@ -579,7 +654,10 @@ noteRouter.delete(
       console.log(`[SSE] Emitting note-deleted for note ${id}`);
       noteEvents.emit("data-change", { type: "note", id: id, userId: user.id });
 
-      return c.json(successResponse(deletedNote, "Note deleted successfully"), HttpStatusCodes.OK);
+      return c.json(
+        successResponse(deletedNote, "Note deleted successfully"),
+        HttpStatusCodes.OK,
+      );
     } catch (error) {
       console.error("Error deleting note:", error);
       return c.json(

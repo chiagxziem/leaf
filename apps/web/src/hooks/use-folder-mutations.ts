@@ -1,10 +1,11 @@
-import type { User } from "@repo/db/schemas/auth.schema";
-import type { FolderWithItems } from "@repo/db/validators/folder.validator";
 import type { QueryClient } from "@tanstack/react-query";
 import { useMutation } from "@tanstack/react-query";
 import { useLocation, useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
+
+import type { User } from "@repo/db/schemas/auth.schema";
+import type { FolderWithItems } from "@repo/db/validators/folder.validator";
 
 import { cancelToastEl } from "@/components/ui/toaster";
 import { apiErrorHandler } from "@/lib/handle-api-error";
@@ -47,7 +48,10 @@ const isDescendant = (node: FolderWithItems, targetId: string): boolean => {
   return node.folders.some((f) => isDescendant(f, targetId));
 };
 
-const findFolder = (node: FolderWithItems, id: string): FolderWithItems | null => {
+const findFolder = (
+  node: FolderWithItems,
+  id: string,
+): FolderWithItems | null => {
   if (node.id === id) return node;
   for (const f of node.folders) {
     const found = findFolder(f, id);
@@ -78,7 +82,8 @@ export function useFolderMutations({
       createFolderFn({ data: { name: vars.name, parentId: vars.parentId } }),
     onMutate: async (vars) => {
       const parentId = vars.parentId ?? rootFolder?.id;
-      if (!parentId || !rootFolder) return { previous: null as FolderWithItems | null };
+      if (!parentId || !rootFolder)
+        return { previous: null as FolderWithItems | null };
 
       // Cancel any outgoing refetches (so they don't overwrite the optimistic update)
       await queryClient.cancelQueries({
@@ -142,7 +147,9 @@ export function useFolderMutations({
 
       // If mutation succeeds, get the real new folder from the server response
       const serverFolder = data.data;
-      const current = queryClient.getQueryData<FolderWithItems | null>(folderQueryOptions.queryKey);
+      const current = queryClient.getQueryData<FolderWithItems | null>(
+        folderQueryOptions.queryKey,
+      );
       if (!current) return;
 
       // Replace the temporary folder in the cached structure with the real one
@@ -204,7 +211,10 @@ export function useFolderMutations({
         const idx = node.folders.findIndex((f) => f.id === folderId);
         if (idx !== -1) {
           removedNode = node.folders[idx];
-          node.folders = [...node.folders.slice(0, idx), ...node.folders.slice(idx + 1)];
+          node.folders = [
+            ...node.folders.slice(0, idx),
+            ...node.folders.slice(idx + 1),
+          ];
           return true;
         }
         for (const f of node.folders) if (remove(f)) return true;
@@ -231,7 +241,9 @@ export function useFolderMutations({
         });
         return next;
       });
-      setActiveParentId((prev) => (prev && removedIds.includes(prev) ? null : prev));
+      setActiveParentId((prev) =>
+        prev && removedIds.includes(prev) ? null : prev,
+      );
 
       // Update the query cache with the folder structure excluding the deleted folder
       queryClient.setQueryData(folderQueryOptions.queryKey, draft);
@@ -243,7 +255,10 @@ export function useFolderMutations({
         if (containsNote(removedNode, currentOpenNoteId)) {
           const nextNote = getMostRecentlyUpdatedNote(draft);
           if (nextNote) {
-            await navigate({ to: "/notes/$noteId", params: { noteId: nextNote.id } });
+            await navigate({
+              to: "/notes/$noteId",
+              params: { noteId: nextNote.id },
+            });
           } else {
             await navigate({ to: "/" });
           }
@@ -359,7 +374,10 @@ export function useFolderMutations({
       const removeFrom = (node: FolderWithItems): boolean => {
         const idx = node.folders.findIndex((f) => f.id === folderId);
         if (idx !== -1) {
-          node.folders = [...node.folders.slice(0, idx), ...node.folders.slice(idx + 1)];
+          node.folders = [
+            ...node.folders.slice(0, idx),
+            ...node.folders.slice(idx + 1),
+          ];
           return true;
         }
         for (const f of node.folders) if (removeFrom(f)) return true;

@@ -7,7 +7,10 @@ import { checkHealthDoc } from "./health.docs";
 const health = createRouter();
 
 health.get("/", checkHealthDoc, (c) => {
-  return c.json(successResponse({ status: "ok" }, "API is healthy"), HttpStatusCodes.OK);
+  return c.json(
+    successResponse({ status: "ok" }, "API is healthy"),
+    HttpStatusCodes.OK,
+  );
 });
 
 export default health;

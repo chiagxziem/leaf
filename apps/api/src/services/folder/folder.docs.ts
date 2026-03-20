@@ -1,5 +1,11 @@
 import { describeRoute } from "hono-openapi";
 
+import {
+  FolderChildrenResponseSchema,
+  FolderSelectSchema,
+  FolderWithItemsSchema,
+} from "@repo/db/validators/folder.validator";
+
 import HttpStatusCodes from "@/lib/http-status-codes";
 import {
   createErrorResponse,
@@ -10,11 +16,6 @@ import {
   getErrDetailsFromErrFields,
 } from "@/lib/openapi";
 import { authExamples, foldersExamples } from "@/lib/openapi-examples";
-import {
-  FolderChildrenResponseSchema,
-  FolderSelectSchema,
-  FolderWithItemsSchema,
-} from "@repo/db/validators/folder.validator";
 
 const tags = ["Folders"];
 
@@ -43,10 +44,13 @@ export const getFolderWithItemsDoc = describeRoute({
       code: "UNAUTHORIZED",
       details: "No session found",
     }),
-    [HttpStatusCodes.NOT_FOUND]: createGenericErrorResponse("Folder not found", {
-      code: "NOT_FOUND",
-      details: "Folder not found",
-    }),
+    [HttpStatusCodes.NOT_FOUND]: createGenericErrorResponse(
+      "Folder not found",
+      {
+        code: "NOT_FOUND",
+        details: "Folder not found",
+      },
+    ),
     [HttpStatusCodes.TOO_MANY_REQUESTS]: createRateLimitErrorResponse(),
     [HttpStatusCodes.INTERNAL_SERVER_ERROR]: createServerErrorResponse(),
   },
@@ -69,7 +73,9 @@ export const createFolderDoc = describeRoute({
       validationError: {
         summary: "Invalid request data",
         code: "INVALID_DATA",
-        details: getErrDetailsFromErrFields(foldersExamples.createFolderValErrs),
+        details: getErrDetailsFromErrFields(
+          foldersExamples.createFolderValErrs,
+        ),
         fields: foldersExamples.createFolderValErrs,
       },
     }),
@@ -77,10 +83,13 @@ export const createFolderDoc = describeRoute({
       code: "UNAUTHORIZED",
       details: "No session found",
     }),
-    [HttpStatusCodes.NOT_FOUND]: createGenericErrorResponse("Parent folder not found", {
-      code: "NOT_FOUND",
-      details: "Parent folder not found",
-    }),
+    [HttpStatusCodes.NOT_FOUND]: createGenericErrorResponse(
+      "Parent folder not found",
+      {
+        code: "NOT_FOUND",
+        details: "Parent folder not found",
+      },
+    ),
     [HttpStatusCodes.TOO_MANY_REQUESTS]: createRateLimitErrorResponse(),
     [HttpStatusCodes.INTERNAL_SERVER_ERROR]: createServerErrorResponse(),
   },
@@ -119,18 +128,21 @@ export const moveFolderDoc = describeRoute({
       code: "UNAUTHORIZED",
       details: "No session found",
     }),
-    [HttpStatusCodes.NOT_FOUND]: createErrorResponse("Folder or parent folder not found", {
-      folderNotFound: {
-        summary: "Folder not found",
-        code: "FOLDER_NOT_FOUND",
-        details: "Folder not found",
+    [HttpStatusCodes.NOT_FOUND]: createErrorResponse(
+      "Folder or parent folder not found",
+      {
+        folderNotFound: {
+          summary: "Folder not found",
+          code: "FOLDER_NOT_FOUND",
+          details: "Folder not found",
+        },
+        parentNotFound: {
+          summary: "Parent folder not found",
+          code: "PARENT_FOLDER_NOT_FOUND",
+          details: "Parent folder not found",
+        },
       },
-      parentNotFound: {
-        summary: "Parent folder not found",
-        code: "PARENT_FOLDER_NOT_FOUND",
-        details: "Parent folder not found",
-      },
-    }),
+    ),
     [HttpStatusCodes.UNPROCESSABLE_ENTITY]: createErrorResponse(
       "Cannot move root folder or create cycles",
       {
@@ -174,7 +186,9 @@ export const updateFolderDoc = describeRoute({
       validationError: {
         summary: "Invalid request data",
         code: "INVALID_DATA",
-        details: getErrDetailsFromErrFields(foldersExamples.createFolderValErrs),
+        details: getErrDetailsFromErrFields(
+          foldersExamples.createFolderValErrs,
+        ),
         fields: foldersExamples.createFolderValErrs,
       },
     }),
@@ -182,18 +196,21 @@ export const updateFolderDoc = describeRoute({
       code: "UNAUTHORIZED",
       details: "No session found",
     }),
-    [HttpStatusCodes.NOT_FOUND]: createErrorResponse("Folder or parent folder not found", {
-      folderNotFound: {
-        summary: "Folder not found",
-        code: "FOLDER_NOT_FOUND",
-        details: "Folder not found",
+    [HttpStatusCodes.NOT_FOUND]: createErrorResponse(
+      "Folder or parent folder not found",
+      {
+        folderNotFound: {
+          summary: "Folder not found",
+          code: "FOLDER_NOT_FOUND",
+          details: "Folder not found",
+        },
+        parentNotFound: {
+          summary: "Parent folder not found",
+          code: "PARENT_FOLDER_NOT_FOUND",
+          details: "Parent folder not found",
+        },
       },
-      parentNotFound: {
-        summary: "Parent folder not found",
-        code: "PARENT_FOLDER_NOT_FOUND",
-        details: "Parent folder not found",
-      },
-    }),
+    ),
     [HttpStatusCodes.UNPROCESSABLE_ENTITY]: createErrorResponse(
       "Cannot update root folder or create cycles",
       {
@@ -246,13 +263,16 @@ export const deleteFolderDoc = describeRoute({
         details: "Folder not found",
       },
     }),
-    [HttpStatusCodes.UNPROCESSABLE_ENTITY]: createErrorResponse("Cannot delete root folder", {
-      rootFolder: {
-        summary: "Root folder cannot be deleted",
-        code: "ROOT_FOLDER",
-        details: "Root folder cannot be deleted",
+    [HttpStatusCodes.UNPROCESSABLE_ENTITY]: createErrorResponse(
+      "Cannot delete root folder",
+      {
+        rootFolder: {
+          summary: "Root folder cannot be deleted",
+          code: "ROOT_FOLDER",
+          details: "Root folder cannot be deleted",
+        },
       },
-    }),
+    ),
     [HttpStatusCodes.TOO_MANY_REQUESTS]: createRateLimitErrorResponse(),
     [HttpStatusCodes.INTERNAL_SERVER_ERROR]: createServerErrorResponse(),
   },
@@ -284,10 +304,13 @@ export const getFolderChildrenDoc = describeRoute({
       code: "UNAUTHORIZED",
       details: "No session found",
     }),
-    [HttpStatusCodes.NOT_FOUND]: createGenericErrorResponse("Folder not found", {
-      code: "NOT_FOUND",
-      details: "Folder not found",
-    }),
+    [HttpStatusCodes.NOT_FOUND]: createGenericErrorResponse(
+      "Folder not found",
+      {
+        code: "NOT_FOUND",
+        details: "Folder not found",
+      },
+    ),
     [HttpStatusCodes.TOO_MANY_REQUESTS]: createRateLimitErrorResponse(),
     [HttpStatusCodes.INTERNAL_SERVER_ERROR]: createServerErrorResponse(),
   },

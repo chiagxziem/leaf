@@ -16,7 +16,9 @@ const TooltipProvider = ({
   );
 };
 
-const Tooltip = ({ ...props }: ComponentProps<typeof TooltipPrimitive.Root>) => {
+const Tooltip = ({
+  ...props
+}: ComponentProps<typeof TooltipPrimitive.Root>) => {
   return (
     <TooltipProvider>
       <TooltipPrimitive.Root data-slot="tooltip" {...props} />
@@ -24,7 +26,9 @@ const Tooltip = ({ ...props }: ComponentProps<typeof TooltipPrimitive.Root>) => 
   );
 };
 
-const TooltipTrigger = ({ ...props }: ComponentProps<typeof TooltipPrimitive.Trigger>) => {
+const TooltipTrigger = ({
+  ...props
+}: ComponentProps<typeof TooltipPrimitive.Trigger>) => {
   return <TooltipPrimitive.Trigger data-slot="tooltip-trigger" {...props} />;
 };
 

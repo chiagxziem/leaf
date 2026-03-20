@@ -150,7 +150,8 @@ export const MULTIPLE_CHOICES = "Multiple Choices";
  *
  * The 511 status code indicates that the client needs to authenticate to gain network access.
  */
-export const NETWORK_AUTHENTICATION_REQUIRED = "Network Authentication Required";
+export const NETWORK_AUTHENTICATION_REQUIRED =
+  "Network Authentication Required";
 /**
  * Official Documentation: https://tools.ietf.org/html/rfc7231#section-6.3.5
  *
@@ -256,7 +257,8 @@ export const PROXY_AUTHENTICATION_REQUIRED = "Proxy Authentication Required";
  *
  * The server is unwilling to process the request because its header fields are too large. The request MAY be resubmitted after reducing the size of the request header fields.
  */
-export const REQUEST_HEADER_FIELDS_TOO_LARGE = "Request Header Fields Too Large";
+export const REQUEST_HEADER_FIELDS_TOO_LARGE =
+  "Request Header Fields Too Large";
 /**
  * Official Documentation: https://tools.ietf.org/html/rfc7231#section-6.5.7
  *
@@ -280,7 +282,8 @@ export const REQUEST_URI_TOO_LONG = "Request-URI Too Long";
  *
  * The range specified by the Range header field in the request can't be fulfilled; it's possible that the range is outside the size of the target URI's data.
  */
-export const REQUESTED_RANGE_NOT_SATISFIABLE = "Requested Range Not Satisfiable";
+export const REQUESTED_RANGE_NOT_SATISFIABLE =
+  "Requested Range Not Satisfiable";
 /**
  * Official Documentation: https://tools.ietf.org/html/rfc7231#section-6.3.6
  *

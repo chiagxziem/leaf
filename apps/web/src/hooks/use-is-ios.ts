@@ -12,7 +12,8 @@ function isIOSLike(): boolean {
   // iPadOS on Desktop Mode (Macintosh UA + Touch Points)
   // Double check both 'Macintosh' UA and 'MacIntel' platform to be safe
   const isIPadOSDesktop =
-    (/\bMacintosh\b/.test(ua) || platform === "MacIntel") && navigator.maxTouchPoints > 1;
+    (/\bMacintosh\b/.test(ua) || platform === "MacIntel") &&
+    navigator.maxTouchPoints > 1;
 
   return isiOSDevice || isIPadOSDesktop;
 }

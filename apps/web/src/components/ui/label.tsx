@@ -3,7 +3,10 @@ import type { ComponentProps } from "react";
 
 import { cn } from "@/lib/utils";
 
-const Label = ({ className, ...props }: ComponentProps<typeof LabelPrimitive.Root>) => {
+const Label = ({
+  className,
+  ...props
+}: ComponentProps<typeof LabelPrimitive.Root>) => {
   return (
     <LabelPrimitive.Root
       className={cn(

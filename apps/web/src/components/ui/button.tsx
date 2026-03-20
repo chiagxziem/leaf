@@ -13,12 +13,14 @@ const buttonVariants = cva(
           "bg-lime-500 text-neutral-950 shadow focus-visible:outline-lime-500 lg:hover:bg-lime-500/90",
         secondary:
           "bg-secondary text-secondary-foreground shadow focus-visible:outline-secondary lg:hover:bg-secondary/80",
-        muted: "bg-muted text-secondary-foreground shadow focus-visible:outline-muted",
+        muted:
+          "bg-muted text-secondary-foreground shadow focus-visible:outline-muted",
         destructive:
           "bg-destructive text-white focus-visible:outline-destructive dark:focus-visible:outline-destructive",
         outline:
           "border bg-background shadow-xs hover:bg-accent/40 hover:text-accent-foreground focus-visible:outline-border dark:bg-input/30 dark:lg:hover:bg-input/40",
-        ghost: "lg:hover:bg-accent lg:hover:text-accent-foreground dark:lg:hover:bg-accent/50",
+        ghost:
+          "lg:hover:bg-accent lg:hover:text-accent-foreground dark:lg:hover:bg-accent/50",
         link: "text-primary underline-offset-4 hover:underline",
       },
       size: {

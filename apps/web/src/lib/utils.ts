@@ -1,6 +1,7 @@
-import type { FolderWithItems } from "@repo/db/validators/folder.validator";
 import { type ClassValue, clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
+
+import type { FolderWithItems } from "@repo/db/validators/folder.validator";
 
 /**
  * Merges class names using clsx and resolves Tailwind conflicts with twMerge.
@@ -39,7 +40,10 @@ export const initialsFromName = (fullName: string): string => {
 
   const firstInitial = parts[0][0]?.toUpperCase() ?? "";
   const lastInitial =
-    (parts.length === 2 ? parts[1][0] : parts[parts.length - 1][0])?.toUpperCase() ?? "";
+    (parts.length === 2
+      ? parts[1][0]
+      : parts[parts.length - 1][0]
+    )?.toUpperCase() ?? "";
   return firstInitial + lastInitial;
 };
 
@@ -70,7 +74,9 @@ export const maskEmail = (input: string): string => {
  * @param folder Root folder to start counting from.
  * @returns Object with total counts { folders, notes }.
  */
-export const countFolderStats = (folder: FolderWithItems): { folders: number; notes: number } => {
+export const countFolderStats = (
+  folder: FolderWithItems,
+): { folders: number; notes: number } => {
   let folders = 0;
   let notes = folder.notes?.length || 0;
   if (folder.folders) {

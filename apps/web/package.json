@@ -2,8 +2,8 @@
   "name": "@repo/web",
   "type": "module",
   "scripts": {
-    "dev": "vite dev",
     "build": "vite build",
+    "dev": "vite dev",
     "start": "bun .output/server/index.mjs"
   },
   "dependencies": {

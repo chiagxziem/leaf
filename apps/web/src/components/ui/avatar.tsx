@@ -3,17 +3,26 @@ import type { ComponentProps } from "react";
 
 import { cn } from "@/lib/utils";
 
-const Avatar = ({ className, ...props }: ComponentProps<typeof AvatarPrimitive.Root>) => {
+const Avatar = ({
+  className,
+  ...props
+}: ComponentProps<typeof AvatarPrimitive.Root>) => {
   return (
     <AvatarPrimitive.Root
-      className={cn("relative flex size-8 shrink-0 overflow-hidden rounded-full", className)}
+      className={cn(
+        "relative flex size-8 shrink-0 overflow-hidden rounded-full",
+        className,
+      )}
       data-slot="avatar"
       {...props}
     />
   );
 };
 
-const AvatarImage = ({ className, ...props }: ComponentProps<typeof AvatarPrimitive.Image>) => {
+const AvatarImage = ({
+  className,
+  ...props
+}: ComponentProps<typeof AvatarPrimitive.Image>) => {
   return (
     <AvatarPrimitive.Image
       className={cn("aspect-square size-full", className)}

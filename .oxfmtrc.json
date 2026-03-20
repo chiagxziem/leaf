@@ -1,21 +1,40 @@
 {
   "$schema": "./node_modules/oxfmt/configuration_schema.json",
-  "experimentalSortImports": {
-    "groups": [
-      ["builtin"],
-      ["external", "external-type"],
-      ["internal", "internal-type"],
-      ["parent", "parent-type", "sibling", "sibling-type"],
-      ["index", "index-type"],
-      ["side-effect"]
+  "printWidth": 80,
+  "trailingComma": "all",
+  "sortImports": {
+    "internalPattern": ["@/"],
+    "sortSideEffects": true,
+    "customGroups": [
+      {
+        "groupName": "repo",
+        "elementNamePattern": ["@repo/**"]
+      }
     ],
-    "internalPattern": ["@repo/", "@/"],
-    "sortSideEffects": true
+    "groups": [
+      ["value-builtin", "type-builtin"],
+      ["value-external", "type-external"],
+      "repo",
+      ["value-internal", "type-internal"],
+      [
+        "value-parent",
+        "type-parent",
+        "value-sibling",
+        "type-sibling",
+        "value-index",
+        "type-index"
+      ],
+      "style",
+      "unknown"
+    ]
   },
-  "experimentalTailwindcss": {
+  "sortTailwindcss": {
     "stylesheet": "./apps/web/src/styles/app.css",
-    "attributes": ["class", "className"],
-    "functions": ["clsx", "cn", "twMerge"]
+    "functions": ["clsx", "cn", "twMerge"],
+    "attributes": ["class", "className"]
+  },
+  "sortPackageJson": {
+    "sortScripts": true
   },
   "ignorePatterns": [
     "**/generated/**",
