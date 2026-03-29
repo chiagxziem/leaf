@@ -5,11 +5,11 @@
     "": {
       "name": "leaf",
       "devDependencies": {
-        "oxfmt": "latest",
-        "oxlint": "latest",
-        "oxlint-tsgolint": "latest",
-        "turbo": "latest",
-        "typescript": "latest",
+        "oxfmt": "^0.41.0",
+        "oxlint": "^1.56.0",
+        "oxlint-tsgolint": "^0.17.1",
+        "turbo": "^2.8.20",
+        "typescript": "5.9.3",
       },
     },
     "apps/api": {
