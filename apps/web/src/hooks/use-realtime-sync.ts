@@ -1,7 +1,7 @@
 import { useQueryClient } from "@tanstack/react-query";
 import { useEffect } from "react";
 
-import { env } from "@/lib/env";
+import env from "@/lib/env";
 import { queryKeys } from "@/lib/query";
 
 /**
